@@ -5,6 +5,11 @@
 ---@class UsrCmds.Migrate.Config
 ---@field opt boolean|nil Enable option API migration (:MigrateOpt)
 ---@field notify boolean|nil Enable notify migration (:MigrateNotify)
+---@field keymaps UsrCmds.Migrate.Keymaps|false|nil Optional keymaps (default: false = disabled)
+
+---@class UsrCmds.Migrate.Keymaps
+---@field opt string|false|nil Keymap that runs :MigrateOpt (current line)
+---@field notify string|false|nil Keymap that runs :MigrateNotify (current line)
 
 --=== notify
 

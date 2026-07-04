@@ -2,8 +2,9 @@
 ---@brief Health check for the migrate.nvim plugin
 ---@description
 --- Run via `:checkhealth migrate`. Verifies that the core modules load, that the
---- required runtime dependencies (lib.nvim, telescope.nvim) are present, and that
---- the optional `ripgrep` binary (used for cwd-wide scans) is available.
+--- required runtime dependencies (lib.nvim, telescope.nvim) are present, that
+--- the optional `ripgrep` binary (used for cwd-wide scans) is available, and
+--- reports the active configuration (incl. optional keymaps/which-key).
 
 local M = {}
 
@@ -61,6 +62,35 @@ function M.check()
     health.ok("ripgrep (rg) found — cwd-wide scanning enabled")
   else
     health.warn("ripgrep (rg) not found — ':MigrateOpt cwd' cannot scan the workspace")
+  end
+
+  ---------------------------------------------------------------------------
+  -- Configuration
+  ---------------------------------------------------------------------------
+  local cfg_ok, config = pcall(require, "migrate.config")
+  if cfg_ok then
+    local cfg = config.get()
+    health.info(string.format("opt=%s, notify=%s", tostring(cfg.opt), tostring(cfg.notify)))
+
+    if type(cfg.keymaps) == "table" then
+      health.info(
+        string.format(
+          "keymaps: opt=%s, notify=%s",
+          tostring(cfg.keymaps.opt or false),
+          tostring(cfg.keymaps.notify or false)
+        )
+      )
+
+      if require("migrate.bindings.which_key").available() then
+        health.ok("which-key detected (keymap descriptions are picked up automatically)")
+      else
+        health.info("which-key not found — keymaps still carry their own descriptions")
+      end
+    else
+      health.info("keymaps: disabled (set `keymaps = { opt = ..., notify = ... }` to enable)")
+    end
+  else
+    health.warn("migrate.config failed to load: " .. tostring(config))
   end
 end
 

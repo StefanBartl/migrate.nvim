@@ -1,0 +1,146 @@
+*migrate.txt*                    Migrate deprecated Neovim API calls in place
+
+                                                                  *migrate.nvim*
+
+Author:   Stefan Bartl
+Homepage: https://github.com/StefanBartl/migrate.nvim
+
+==============================================================================
+CONTENTS                                                     *migrate-contents*
+
+  1. Introduction ................. |migrate-introduction|
+  2. Requirements ................. |migrate-requirements|
+  3. Setup ........................ |migrate-setup|
+  4. Configuration ................ |migrate-config|
+  5. Commands ..................... |migrate-commands|
+  6. Keymaps ...................... |migrate-keymaps|
+  7. Health check ................. |migrate-health|
+
+==============================================================================
+1. INTRODUCTION                                          *migrate-introduction*
+
+migrate.nvim finds and rewrites deprecated Neovim API calls in the current
+line, a range, the whole buffer, or the entire working directory.
+
+  - The *opt* module migrates
+    |nvim_buf_set_option()| / |nvim_buf_get_option()| / |nvim_win_set_option()|
+    / |nvim_win_get_option()| to |nvim_set_option_value()| / |nvim_get_option_value()|.
+
+  - The *notify* module migrates |vim.notify()| calls (including detected
+    local aliases and existing bare `notify(...)` calls) to
+    `lib.nvim.notify`, auto-injecting/upgrading the
+    `require("lib.nvim.notify").create("[module]")` import line and removing
+    stale aliases.
+
+Buffer (`%`) and cwd scans open a Telescope picker with a diff-style preview;
+line and range scans are applied immediately, no picker involved.
+
+==============================================================================
+2. REQUIREMENTS                                         *migrate-requirements*
+
+  - Neovim 0.9+
+  - lib.nvim (required — notifications, keymaps, migrated notify API)
+  - telescope.nvim (required for the `%` and `cwd` picker modes)
+  - ripgrep `rg` (optional — required only for `cwd`-wide scans)
+
+==============================================================================
+3. SETUP                                                       *migrate-setup*
+
+                                                              *migrate.setup()*
+Minimal setup (enables both modules): >lua
+  require("migrate").setup()
+<
+With lazy.nvim (lazy-loaded on command use): >lua
+  {
+    "StefanBartl/migrate.nvim",
+    dependencies = { "StefanBartl/lib.nvim" },
+    cmd = { "MigrateOpt", "MigrateNotify" },
+    opts = {},
+  }
+<
+Selective setup: >lua
+  require("migrate").setup({
+    opt = false,   -- disable :MigrateOpt
+    notify = true, -- keep :MigrateNotify
+  })
+<
+Manual, per-module setup (bypasses `migrate.config` entirely): >lua
+  require("migrate.opt").enable()
+  require("migrate.notify").enable()
+<
+==============================================================================
+4. CONFIGURATION                                               *migrate-config*
+
+Defaults: >lua
+  {
+    opt = true,
+    notify = true,
+    keymaps = false,
+  }
+<
+Field reference ~
+
+opt                    (boolean)  Enable `:MigrateOpt`.
+notify                 (boolean)  Enable `:MigrateNotify`.
+keymaps  (false|table)  Optional keymaps invoking the corresponding command
+                       in current-line mode. `false` (default) binds none.
+                       Table form: >lua
+                         keymaps = { opt = "<leader>mo", notify = "<leader>mn" }
+<
+An empty options table (or no arguments to |migrate.setup()|) enables both
+`opt` and `notify` — equivalent to `{ opt = true, notify = true }`.
+
+==============================================================================
+5. COMMANDS                                                  *migrate-commands*
+
+                                                              *:MigrateOpt*
+                                                              *:MigrateNotify*
+:MigrateOpt [%|cwd]                    Migrate option-API calls.
+:MigrateNotify [%|cwd] [module_name]   Migrate vim.notify calls.
+:{range}MigrateOpt                     Migrate a range/visual selection.
+:{range}MigrateNotify [module_name]    Migrate a range/visual selection.
+
+    [empty]   Migrate the current line, applied immediately.
+    {range}   Migrate the given range (e.g. Visual `:'<,'>`), applied
+              immediately — no picker.
+    %         Scan the whole buffer, open the Telescope picker.
+    cwd       Scan the working directory (via ripgrep), open the Telescope
+              picker. `:MigrateNotify cwd` additionally auto-writes any file
+              it touches back to disk.
+
+`:MigrateNotify`'s optional `module_name` argument sets the bracketed name in
+the injected `require("lib.nvim.notify").create("[module_name]")` line, e.g.
+`:MigrateNotify % my.plugin.ui`. Omit it to get `create("")`.
+
+Picker keys (buffer/cwd modes): `<CR>` applies the current or multi-selected
+(`<Tab>`) entries; `<C-a>`, `<S-A>`, `<M-a>`, or `<C-y>` apply every match at
+once.
+
+==============================================================================
+6. KEYMAPS                                                    *migrate-keymaps*
+
+Disabled by default. Enable via |migrate.setup()|: >lua
+  require("migrate").setup({
+    keymaps = {
+      opt = "<leader>mo",
+      notify = "<leader>mn",
+    },
+  })
+<
+Each configured keymap runs its command with no argument (current-line
+mode). which-key (if installed) picks up each mapping's `desc` on its own —
+there is no shared prefix to register as a group, since the keys are
+entirely user-chosen.
+
+==============================================================================
+7. HEALTH CHECK                                                *migrate-health*
+
+                                                          *:checkhealth-migrate*
+>vim
+  :checkhealth migrate
+<
+Reports core module status, required dependencies (lib.nvim, telescope.nvim),
+optional ripgrep availability, the active configuration, and whether
+which-key is detected.
+
+vim:tw=78:ts=8:ft=help:norl:

@@ -14,45 +14,15 @@
 ---   require("migrate.opt").enable()
 ---   require("migrate.notify").enable()
 
+local config = require("migrate.config")
+
 local M = {}
 
 ---Setup migration tools
----@param config UsrCmds.Migrate.Config|nil Configuration table
-function M.setup(config)
-  config = config or {}
-
-  -- Default: enable all if no config provided
-  if vim.tbl_isempty(config) then
-    config = {
-      opt = true,
-      notify = true,
-    }
-  end
-
-  -- Enable modules based on config
-  if config.opt then
-    local ok, opt = pcall(require, "migrate.opt")
-    if ok then
-      opt.enable()
-    else
-      vim.notify(
-        "[migrate] Failed to load opt module: " .. tostring(opt),
-        vim.log.levels.WARN
-      )
-    end
-  end
-
-  if config.notify then
-    local ok, notify = pcall(require, "migrate.notify")
-    if ok then
-      notify.enable()
-    else
-      vim.notify(
-        "[migrate] Failed to load notify module: " .. tostring(notify),
-        vim.log.levels.WARN
-      )
-    end
-  end
+---@param opts UsrCmds.Migrate.Config|nil Configuration table
+function M.setup(opts)
+  config.setup(opts)
+  require("migrate.bindings").setup(config.get())
 end
 
 ---Enable all migration tools (convenience function)
