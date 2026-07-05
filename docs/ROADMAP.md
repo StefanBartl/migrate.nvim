@@ -33,6 +33,13 @@ value/effort, not binding.
 - **Treesitter stays out of scope** — deliberately reverted in favor of pure
   regex/paren-counting (see `docs/Regex-statt-TS.md`); revisit only if a
   concrete correctness bug can't be fixed with the line-based approach.
+- **`lib.nvim.usercmd`** — `common/command.lua` and `notify/init.lua`
+  register `:MigrateOpt`/`:MigrateNotify` directly via
+  `vim.api.nvim_create_user_command` instead of the `lib.nvim.usercmd`
+  wrapper (which would add automatic `pcall`-wrapping of the callback).
+- **Debug switch** — no `debug = true` config flag / tracing of the
+  scan → picker → apply → write pipeline; would help diagnose bad
+  migrations if ever reported.
 
 ## Housekeeping
 
@@ -42,5 +49,12 @@ value/effort, not binding.
 
 ## Checklist audit
 
-migrate.nvim was audited against the personal Lua/Neovim plugin checklist.
-Results and deliberate deviations: [ROADMAP/Checklist.md](ROADMAP/Checklist.md).
+migrate.nvim was audited against the personal Lua/Neovim plugin checklist
+([ROADMAP/PluginPackagingChecklist.md](ROADMAP/PluginPackagingChecklist.md))
+and the three personal architecture/coding checklists. Results and
+deliberate deviations:
+
+- [ROADMAP/Arch&Coding.md](ROADMAP/Arch&Coding.md) — architecture & coding rules
+- [ROADMAP/Zentral-Prinzipien.md](ROADMAP/Zentral-Prinzipien.md) — central module principles
+- [ROADMAP/Checklist.md](ROADMAP/Checklist.md) — master checklist (Schnell-Check/PR/Coding)
+- [ROADMAP/NEOTREE_FEATURES.md](ROADMAP/NEOTREE_FEATURES.md) — filetree-feature audit (result: none)
