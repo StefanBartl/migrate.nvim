@@ -99,17 +99,11 @@ end
 ---@param filepath string
 ---@return integer|nil bufnr
 function M.ensure_buffer(filepath)
-  local bufnr = fn.bufnr(filepath)
-
-  if bufnr == -1 then
-    bufnr = fn.bufadd(filepath)
+  local ok, bufnr_or_err = require("lib.nvim.buffer.open_background")(filepath)
+  if not ok then
+    return nil
   end
-
-  if not api.nvim_buf_is_loaded(bufnr) then
-    fn.bufload(bufnr)
-  end
-
-  return api.nvim_buf_is_valid(bufnr) and bufnr or nil
+  return bufnr_or_err
 end
 
 return M
