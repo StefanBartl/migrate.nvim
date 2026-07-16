@@ -13,25 +13,6 @@ local M = {}
 
 M.options = vim.deepcopy(DEFAULTS)
 
---- Recursively merge `override` into a copy of `base`.
----@param base table
----@param override table
----@return table
-local function deep_merge(base, override)
-  local out = {}
-  for k, v in pairs(base) do
-    out[k] = v
-  end
-  for k, v in pairs(override) do
-    if type(v) == "table" and type(out[k]) == "table" and not vim.islist(v) then
-      out[k] = deep_merge(out[k], v)
-    else
-      out[k] = v
-    end
-  end
-  return out
-end
-
 --- Apply user options. Safe to call once from `setup()`.
 --- An empty/nil table falls back to enabling every module (back-compat with
 --- the pre-config.nvim default behavior).
@@ -43,7 +24,14 @@ function M.setup(opts)
     return
   end
 
-  M.options = deep_merge(DEFAULTS, opts)
+  -- lib.lua.tables.deep_merge mutates its first argument, so it runs against
+  -- a fresh deep copy — DEFAULTS itself must never be mutated (its own
+  -- docstring: "Never mutate it at runtime"). Unlike this module's prior
+  -- hand-rolled version, it doesn't special-case vim.islist() values (an
+  -- override list would be recursively merged into a default list rather
+  -- than replacing it wholesale) — not currently reachable since no config
+  -- field is list-typed, but worth knowing if one is added later.
+  M.options = require("lib.lua.tables").deep_merge(vim.deepcopy(DEFAULTS), opts)
 end
 
 ---@return UsrCmds.Migrate.Config
