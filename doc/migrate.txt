@@ -115,6 +115,12 @@ no subcommand tree).
 the injected `require("lib.nvim.notify").create("[module_name]")` line, e.g.
 `:MigrateNotify % my.plugin.ui`. Omit it to get `create("")`.
 
+`module_name` is always the *second* whitespace-separated token, even in
+`{range}` mode where there is no `[%|cwd]` token to give. A single token
+after `:{range}MigrateNotify` fills the (unused) first slot, not
+`module_name` — pass a placeholder first to reach it, e.g.
+`:'<,'>MigrateNotify - my.plugin.ui`.
+
 Picker keys (buffer/cwd modes): `<CR>` applies the current or multi-selected
 (`<Tab>`) entries; `<C-a>`, `<S-A>`, `<M-a>`, or `<C-y>` apply every match at
 once.

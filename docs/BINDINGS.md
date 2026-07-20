@@ -52,6 +52,10 @@ Argument semantics (both commands):
 | `%` | Whole buffer, opens Telescope picker |
 | `cwd` | Working directory via ripgrep, opens Telescope picker (`MigrateNotify cwd` auto-writes touched files) |
 
+For `:MigrateNotify`, `module_name` is always the *second* token — in range
+mode a single token fills the unused first slot instead, so pass a
+placeholder first: `:'<,'>MigrateNotify - my.plugin.ui`.
+
 ## Autocommands
 
 None. migrate.nvim performs all work on explicit `:MigrateOpt` /
