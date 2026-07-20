@@ -46,7 +46,10 @@ verb (a flat root route, no subcommand tree).
 
 `:MigrateNotify` additionally accepts a second argument, the module name used
 in the injected `require("lib.nvim.notify").create("[name]")` line, e.g.
-`:MigrateNotify % my.plugin.ui`.
+`:MigrateNotify % my.plugin.ui`. This module name is always the *second*
+token, even in range mode — `:'<,'>MigrateNotify my.plugin.ui` puts
+`my.plugin.ui` in the unused first slot, not the module name. Pass a
+placeholder first instead: `:'<,'>MigrateNotify - my.plugin.ui`.
 
 ---
 
