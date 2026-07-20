@@ -31,7 +31,12 @@ no group/prefix registration is performed (see
 ## User Commands
 
 Registered when their module is enabled (`opt` / `notify`, both default to
-`true`).
+`true`), each its own [`lib.nvim.usercmd.composer`](https://github.com/StefanBartl/lib.nvim)
+verb (a flat `path = {}` root route — no subcommand tree). `:MigrateOpt` is
+registered through the shared factory in `lua/migrate/common/command.lua`;
+`:MigrateNotify` registers directly in `lua/migrate/notify/init.lua` since
+its grammar (an extra `module_name` argument, different auto-write rules)
+doesn't fit that factory.
 
 | name | args | range | desc |
 | --- | --- | --- | --- |

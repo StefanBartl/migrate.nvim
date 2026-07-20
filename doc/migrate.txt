@@ -93,6 +93,9 @@ An empty options table (or no arguments to |migrate.setup()|) enables both
 ==============================================================================
 5. COMMANDS                                                  *migrate-commands*
 
+Each command is its own lib.nvim.usercmd.composer verb (a flat root route,
+no subcommand tree).
+
                                                               *:MigrateOpt*
                                                               *:MigrateNotify*
 :MigrateOpt [%|cwd]                    Migrate option-API calls.

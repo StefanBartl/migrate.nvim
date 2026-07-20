@@ -34,6 +34,9 @@ scenarios (aliasing, multiline calls, batch workflows, edge cases).
 
 ## Commands
 
+Each command is its own [`lib.nvim.usercmd.composer`](https://github.com/StefanBartl/lib.nvim)
+verb (a flat root route, no subcommand tree).
+
 | Command | Argument | Behavior |
 |---|---|---|
 | `:MigrateOpt` / `:MigrateNotify` | *(none)* | Migrate the current line, applied immediately |

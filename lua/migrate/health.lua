@@ -49,6 +49,12 @@ function M.check()
     health.error("lib.nvim not found (required) — install StefanBartl/lib.nvim")
   end
 
+  if pcall(require, "lib.nvim.usercmd.composer") then
+    health.ok("lib.nvim.usercmd.composer available (:MigrateOpt/:MigrateNotify)")
+  else
+    health.error("lib.nvim.usercmd.composer not found — commands will fail to register")
+  end
+
   if pcall(require, "telescope") then
     health.ok("telescope.nvim is available (used for the interactive picker)")
   else
