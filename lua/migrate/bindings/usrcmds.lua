@@ -6,6 +6,8 @@
 --- `migrate.common.command`; this module only decides *which* of them get
 --- enabled for a given config.
 
+local notify = require("lib.nvim.notify").create("[migrate.bindings.usrcmds]")
+
 local M = {}
 
 ---@param cfg UsrCmds.Migrate.Config
@@ -16,19 +18,16 @@ function M.setup(cfg)
     if ok then
       opt.enable()
     else
-      vim.notify("[migrate] Failed to load opt module: " .. tostring(opt), vim.log.levels.WARN)
+      notify.warn("Failed to load opt module: " .. tostring(opt))
     end
   end
 
   if cfg.notify then
-    local ok, notify = pcall(require, "migrate.notify")
+    local ok, notify_mod = pcall(require, "migrate.notify")
     if ok then
-      notify.enable()
+      notify_mod.enable()
     else
-      vim.notify(
-        "[migrate] Failed to load notify module: " .. tostring(notify),
-        vim.log.levels.WARN
-      )
+      notify.warn("Failed to load notify module: " .. tostring(notify_mod))
     end
   end
 end
