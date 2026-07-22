@@ -3,7 +3,7 @@
 ---@description
 --- Provides two strategies for writing migrated buffers to disk:
 ---   - write_sync: Blocking write using vim.fn.writefile
----   - write_async: Non-blocking write using vim.loop.fs_write
+---   - write_async: Non-blocking write using vim.uv.fs_write
 ---
 --- Both handle:
 ---   - Buffer validation
@@ -56,7 +56,7 @@ function M.write_sync(bufnr, filepath, unload_after)
   return true, nil
 end
 
----Asynchronous file write using vim.loop.fs_*
+---Asynchronous file write using vim.uv.fs_*
 ---@param bufnr integer Buffer to write
 ---@param filepath string Absolute path to write to
 ---@param unload_after boolean|nil Unload buffer after write if wasn't originally loaded

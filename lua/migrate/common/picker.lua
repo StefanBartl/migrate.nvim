@@ -20,6 +20,7 @@ local notify = require("lib.nvim.notify").create("[migrate.picker]")
 local M = {}
 
 local api = vim.api
+local ns = api.nvim_create_namespace("migrate.common.picker")
 
 --- Show generic migration picker
 ---@param matches MigrateCommon.Match[]
@@ -85,7 +86,7 @@ function M.show(matches, opts)
         api.nvim_set_option_value("filetype", "lua", { buf = self.state.bufnr })
 
         if #flattened > 0 then
-          api.nvim_buf_add_highlight(self.state.bufnr, -1, "DiffAdd", 0, 0, -1)
+          api.nvim_buf_set_extmark(self.state.bufnr, ns, 0, 0, { end_row = 1, hl_group = "DiffAdd" })
         end
       end,
     }),
