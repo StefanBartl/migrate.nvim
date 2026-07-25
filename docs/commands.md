@@ -3,25 +3,33 @@
 ## Quick Start
 
 ```lua
-require("migrate").setup() -- opt + notify both enabled by default
+require("migrate").setup() -- opt + notify + hl + lsp all enabled by default
 ```
 
 ```vim
 " Current line:
 :MigrateOpt
 :MigrateNotify
+:MigrateHl
+:MigrateLsp
 
 " Whole buffer, via Telescope picker:
 :MigrateOpt %
 :MigrateNotify % my.module.name
+:MigrateHl %
+:MigrateLsp %
 
 " Whole cwd, via Telescope picker (notify mode auto-writes touched files):
 :MigrateOpt cwd
 :MigrateNotify cwd my.module.name
+:MigrateHl cwd
+:MigrateLsp cwd
 
 " Explicit range:
 :'<,'>MigrateOpt
 :'<,'>MigrateNotify
+:'<,'>MigrateHl
+:'<,'>MigrateLsp
 ```
 
 In the Telescope picker: `<CR>` applies the current/multi-selected entries,
@@ -35,14 +43,17 @@ scenarios (aliasing, multiline calls, batch workflows, edge cases).
 ## Commands
 
 Each command is its own [`lib.nvim.usercmd.composer`](https://github.com/StefanBartl/lib.nvim)
-verb (a flat root route, no subcommand tree).
+verb (a flat root route, no subcommand tree). `:MigrateOpt`, `:MigrateHl`,
+and `:MigrateLsp` share the same argument grammar (registered via the
+`migrate.common.command` factory); `:MigrateNotify` additionally accepts a
+`module_name` argument (see below).
 
 | Command | Argument | Behavior |
 |---|---|---|
-| `:MigrateOpt` / `:MigrateNotify` | *(none)* | Migrate the current line, applied immediately |
-| `:'<,'>MigrateOpt` / `:'<,'>MigrateNotify` | *(range)* | Migrate the given range, applied immediately |
-| `:MigrateOpt %` / `:MigrateNotify %` | `%` | Scan the whole buffer, open Telescope picker |
-| `:MigrateOpt cwd` / `:MigrateNotify cwd` | `cwd` | Scan the working directory via ripgrep, open Telescope picker |
+| `:MigrateOpt` / `:MigrateNotify` / `:MigrateHl` / `:MigrateLsp` | *(none)* | Migrate the current line, applied immediately |
+| `:'<,'>MigrateOpt` / `:'<,'>MigrateNotify` / `:'<,'>MigrateHl` / `:'<,'>MigrateLsp` | *(range)* | Migrate the given range, applied immediately |
+| `:MigrateOpt %` / `:MigrateNotify %` / `:MigrateHl %` / `:MigrateLsp %` | `%` | Scan the whole buffer, open Telescope picker |
+| `:MigrateOpt cwd` / `:MigrateNotify cwd` / `:MigrateHl cwd` / `:MigrateLsp cwd` | `cwd` | Scan the working directory via ripgrep, open Telescope picker |
 
 `:MigrateNotify` additionally accepts a second argument, the module name used
 in the injected `require("lib.nvim.notify").create("[name]")` line, e.g.
@@ -62,6 +73,8 @@ require("migrate").setup({
   keymaps = {
     opt = "<leader>mo",
     notify = "<leader>mn",
+    hl = "<leader>mh",
+    lsp = "<leader>ml",
   },
 })
 ```

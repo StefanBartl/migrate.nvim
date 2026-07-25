@@ -7,13 +7,16 @@ reflected here.
 
 ## Keymaps
 
-None by default. Optional — set `keymaps` in `setup()` to enable:
+None by default. Optional — set `keymaps` in `setup()` to enable, keyed the
+same as [`migrate.registry`](../lua/migrate/registry.lua)'s entries:
 
 ```lua
 require("migrate").setup({
   keymaps = {
     opt = "<leader>mo",
     notify = "<leader>mn",
+    hl = "<leader>mh",
+    lsp = "<leader>ml",
   },
 })
 ```
@@ -22,6 +25,8 @@ require("migrate").setup({
 | --- | --- | --- | --- | --- |
 | `keymaps.opt` | n | `keymaps.opt` | `:MigrateOpt` (current line) | migrate: run :MigrateOpt (current line) |
 | `keymaps.notify` | n | `keymaps.notify` | `:MigrateNotify` (current line) | migrate: run :MigrateNotify (current line) |
+| `keymaps.hl` | n | `keymaps.hl` | `:MigrateHl` (current line) | migrate: run :MigrateHl (current line) |
+| `keymaps.lsp` | n | `keymaps.lsp` | `:MigrateLsp` (current line) | migrate: run :MigrateLsp (current line) |
 
 There is no fixed prefix — each `lhs` is an arbitrary string the user
 chooses. which-key (if installed) picks up the `desc` above automatically;
@@ -30,20 +35,23 @@ no group/prefix registration is performed (see
 
 ## User Commands
 
-Registered when their module is enabled (`opt` / `notify`, both default to
-`true`), each its own [`lib.nvim.usercmd.composer`](https://github.com/StefanBartl/lib.nvim)
-verb (a flat `path = {}` root route — no subcommand tree). `:MigrateOpt` is
-registered through the shared factory in `lua/migrate/common/command.lua`;
-`:MigrateNotify` registers directly in `lua/migrate/notify/init.lua` since
-its grammar (an extra `module_name` argument, different auto-write rules)
-doesn't fit that factory.
+Registered when their module is enabled (`opt` / `notify` / `hl` / `lsp`,
+all default to `true`, driven by [`migrate.registry`](../lua/migrate/registry.lua)),
+each its own [`lib.nvim.usercmd.composer`](https://github.com/StefanBartl/lib.nvim)
+verb (a flat `path = {}` root route — no subcommand tree). `:MigrateOpt`,
+`:MigrateHl`, and `:MigrateLsp` are registered through the shared factory in
+`lua/migrate/common/command.lua`; `:MigrateNotify` registers directly in
+`lua/migrate/notify/init.lua` since its grammar (an extra `module_name`
+argument, different auto-write rules) doesn't fit that factory.
 
 | name | args | range | desc |
 | --- | --- | --- | --- |
 | `:MigrateOpt` | `[%\|cwd]` | yes | Migrate `nvim_{buf,win}_{get,set}_option` calls |
 | `:MigrateNotify` | `[%\|cwd] [module_name]` | yes | Migrate `vim.notify` calls to `lib.nvim.notify` |
+| `:MigrateHl` | `[%\|cwd]` | yes | Migrate `vim.highlight.*` calls to `vim.hl.*` |
+| `:MigrateLsp` | `[%\|cwd]` | yes | Migrate `vim.lsp.buf_get_clients()`/`get_active_clients()` to `vim.lsp.get_clients()` |
 
-Argument semantics (both commands):
+Argument semantics (all four commands):
 
 | arg | behavior |
 | --- | --- |
@@ -59,8 +67,8 @@ placeholder first: `:'<,'>MigrateNotify - my.plugin.ui`.
 ## Autocommands
 
 None. migrate.nvim performs all work on explicit `:MigrateOpt` /
-`:MigrateNotify` invocations — no `FileType`/`BufWritePre`/etc. autocmds are
-registered.
+`:MigrateNotify` / `:MigrateHl` / `:MigrateLsp` invocations — no
+`FileType`/`BufWritePre`/etc. autocmds are registered.
 
 ## Picker keys
 

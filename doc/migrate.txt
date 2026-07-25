@@ -27,13 +27,25 @@ line, a range, the whole buffer, or the entire working directory.
     / |nvim_win_get_option()| to |nvim_set_option_value()| / |nvim_get_option_value()|.
 
   - The *notify* module migrates |vim.notify()| calls (including detected
-    local aliases and existing bare `notify(...)` calls) to
-    `lib.nvim.notify`, auto-injecting/upgrading the
+    local aliases and existing bare `notify(...)` calls, single- and
+    multiline) to `lib.nvim.notify`, auto-injecting/upgrading the
     `require("lib.nvim.notify").create("[module]")` import line and removing
-    stale aliases.
+    stale aliases. A `vim.notify(...)` call written inside a `[[ ]]`/`[=[ ]=]`
+    long-bracket string literal is left alone rather than mistaken for code.
+
+  - The *hl* module migrates `vim.highlight.range()` / `vim.highlight.on_yank()`
+    / `vim.highlight.priorities` to `vim.hl.*` (the module was renamed/removed
+    outright in favor of `vim.hl` on current Neovim).
+
+  - The *lsp* module migrates `vim.lsp.buf_get_clients()` and
+    `vim.lsp.get_active_clients()` to `vim.lsp.get_clients()`.
 
 Buffer (`%`) and cwd scans open a Telescope picker with a diff-style preview;
 line and range scans are applied immediately, no picker involved.
+
+Every module is a plain entry in `migrate.registry` (config key -> module ->
+command); a third-party module can register itself there without touching
+`migrate.config` or `migrate.bindings`.
 
 ==============================================================================
 2. REQUIREMENTS                                         *migrate-requirements*
@@ -47,14 +59,14 @@ line and range scans are applied immediately, no picker involved.
 3. SETUP                                                       *migrate-setup*
 
                                                               *migrate.setup()*
-Minimal setup (enables both modules): >lua
+Minimal setup (enables every registered module): >lua
   require("migrate").setup()
 <
 With lazy.nvim (lazy-loaded on command use): >lua
   {
     "StefanBartl/migrate.nvim",
     dependencies = { "StefanBartl/lib.nvim" },
-    cmd = { "MigrateOpt", "MigrateNotify" },
+    cmd = { "MigrateOpt", "MigrateNotify", "MigrateHl", "MigrateLsp" },
     opts = {},
   }
 <
@@ -62,11 +74,15 @@ Selective setup: >lua
   require("migrate").setup({
     opt = false,   -- disable :MigrateOpt
     notify = true, -- keep :MigrateNotify
+    hl = true,
+    lsp = true,
   })
 <
 Manual, per-module setup (bypasses `migrate.config` entirely): >lua
   require("migrate.opt").enable()
   require("migrate.notify").enable()
+  require("migrate.hl").enable()
+  require("migrate.lsp").enable()
 <
 ==============================================================================
 4. CONFIGURATION                                               *migrate-config*
@@ -75,20 +91,30 @@ Defaults: >lua
   {
     opt = true,
     notify = true,
+    hl = true,
+    lsp = true,
     keymaps = false,
+    debug = false,
   }
 <
 Field reference ~
 
 opt                    (boolean)  Enable `:MigrateOpt`.
 notify                 (boolean)  Enable `:MigrateNotify`.
+hl                     (boolean)  Enable `:MigrateHl`.
+lsp                    (boolean)  Enable `:MigrateLsp`.
 keymaps  (false|table)  Optional keymaps invoking the corresponding command
                        in current-line mode. `false` (default) binds none.
                        Table form: >lua
-                         keymaps = { opt = "<leader>mo", notify = "<leader>mn" }
+                         keymaps = { opt = "<leader>mo", notify = "<leader>mn",
+                                      hl = "<leader>mh", lsp = "<leader>ml" }
 <
-An empty options table (or no arguments to |migrate.setup()|) enables both
-`opt` and `notify` — equivalent to `{ opt = true, notify = true }`.
+debug                  (boolean)  Trace the scan -> picker -> apply -> write
+                       pipeline via `lib.nvim.notify`'s `.debug()` level.
+
+An empty options table (or no arguments to |migrate.setup()|) enables every
+module registered in `migrate.registry` — equivalent to explicitly setting
+each of `opt`, `notify`, `hl`, `lsp` to `true`.
 
 ==============================================================================
 5. COMMANDS                                                  *migrate-commands*
@@ -98,10 +124,16 @@ no subcommand tree).
 
                                                               *:MigrateOpt*
                                                               *:MigrateNotify*
+                                                              *:MigrateHl*
+                                                              *:MigrateLsp*
 :MigrateOpt [%|cwd]                    Migrate option-API calls.
 :MigrateNotify [%|cwd] [module_name]   Migrate vim.notify calls.
+:MigrateHl [%|cwd]                     Migrate vim.highlight.* calls.
+:MigrateLsp [%|cwd]                    Migrate deprecated LSP client-lookup calls.
 :{range}MigrateOpt                     Migrate a range/visual selection.
 :{range}MigrateNotify [module_name]    Migrate a range/visual selection.
+:{range}MigrateHl                      Migrate a range/visual selection.
+:{range}MigrateLsp                     Migrate a range/visual selection.
 
     [empty]   Migrate the current line, applied immediately.
     {range}   Migrate the given range (e.g. Visual `:'<,'>`), applied
@@ -133,6 +165,8 @@ Disabled by default. Enable via |migrate.setup()|: >lua
     keymaps = {
       opt = "<leader>mo",
       notify = "<leader>mn",
+      hl = "<leader>mh",
+      lsp = "<leader>ml",
     },
   })
 <
