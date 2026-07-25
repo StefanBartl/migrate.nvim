@@ -1,13 +1,15 @@
 ---@module 'migrate.bindings.keymaps'
 ---@brief Optional keymaps invoking the migration commands on the current line.
 ---@description
---- Disabled by default (`config.keymaps = false`). Set to a table to enable:
+--- Disabled by default (`config.keymaps = false`). Set to a table to enable,
+--- keyed the same as `migrate.registry`'s entries:
 ---   keymaps = { opt = "<leader>mo", notify = "<leader>mn" }
---- Each entry runs `:MigrateOpt` / `:MigrateNotify` with no argument, i.e. the
---- current-line mode (see docs/BINDINGS.md). which-key (if installed) picks up
---- the `desc` on each mapping automatically -- no group registration needed.
+--- Each entry runs its command with no argument, i.e. the current-line mode
+--- (see docs/BINDINGS.md). which-key (if installed) picks up the `desc` on
+--- each mapping automatically -- no group registration needed.
 
 local map = require("lib.nvim.map")
+local registry = require("migrate.registry")
 
 local M = {}
 
@@ -19,12 +21,16 @@ function M.setup(cfg)
     return
   end
 
-  if km.opt then
-    map("n", km.opt, "<cmd>MigrateOpt<cr>", {}, "migrate: run :MigrateOpt (current line)")
-  end
-
-  if km.notify then
-    map("n", km.notify, "<cmd>MigrateNotify<cr>", {}, "migrate: run :MigrateNotify (current line)")
+  for name, entry in pairs(registry.list()) do
+    if km[name] then
+      map(
+        "n",
+        km[name],
+        string.format("<cmd>%s<cr>", entry.command),
+        {},
+        string.format("migrate: run :%s (current line)", entry.command)
+      )
+    end
   end
 end
 

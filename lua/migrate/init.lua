@@ -13,8 +13,13 @@
 --- Or enable individual modules:
 ---   require("migrate.opt").enable()
 ---   require("migrate.notify").enable()
+---
+--- Every enabled module comes from `migrate.registry` -- see that module for
+--- the full list (`opt`, `notify`, `hl`, `lsp`, and any third-party module
+--- registered before `setup()` runs).
 
 local config = require("migrate.config")
+local registry = require("migrate.registry")
 
 local M = {}
 
@@ -25,19 +30,20 @@ function M.setup(opts)
   require("migrate.bindings").setup(config.get())
 end
 
----Enable all migration tools (convenience function)
+---Enable all registered migration tools (convenience function)
 function M.enable_all()
-  M.setup({
-    opt = true,
-    notify = true,
-  })
+  local opts = {}
+  for name in pairs(registry.list()) do
+    opts[name] = true
+  end
+  M.setup(opts)
 end
 
----Disable all migration tools
+---Disable all registered migration tools
 function M.disable_all()
-  -- Remove user commands
-  pcall(vim.api.nvim_del_user_command, "MigrateOpt")
-  pcall(vim.api.nvim_del_user_command, "MigrateNotify")
+  for _, entry in pairs(registry.list()) do
+    pcall(vim.api.nvim_del_user_command, entry.command)
+  end
 end
 
 return M
