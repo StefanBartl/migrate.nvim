@@ -21,6 +21,7 @@
 require("migrate.common.@types")
 local notify = require("lib.nvim.notify").create("[migrate]")
 local composer = require("lib.nvim.usercmd.composer")
+local debug = require("migrate.common.debug")
 
 local M = {}
 
@@ -31,8 +32,12 @@ local str_fmt = string.format
 -- pre-migration default completion (`function() return { "%", "cwd" } end`)
 -- verbatim.
 composer.register_type("MIGRATE_SCOPE", {
-  validate = function(raw) return true, raw, nil end,
-  complete = function() return { "%", "cwd" } end,
+  validate = function(raw)
+    return true, raw, nil
+  end,
+  complete = function()
+    return { "%", "cwd" }
+  end,
 })
 
 --- Run one migration invocation. `cmd_opts` is composer's `ctx.raw` (same
@@ -45,6 +50,7 @@ local function dispatch(opts, cmd_opts)
 
   -- Handle range mode (visual or explicit range)
   if cmd_opts.range > 0 then
+    debug.trace("[%s] scan_range %d-%d", opts.name, cmd_opts.line1, cmd_opts.line2)
     local matches = opts.scan_range(bufnr, cmd_opts.line1, cmd_opts.line2)
 
     if #matches == 0 then
@@ -53,6 +59,7 @@ local function dispatch(opts, cmd_opts)
     end
 
     -- Apply directly (no picker for ranges)
+    debug.trace("[%s] apply %d match(es) (range)", opts.name, #matches)
     opts.apply_matches(matches)
 
     notify.info(str_fmt("Applied %d migration(s) in range", #matches))
@@ -63,6 +70,7 @@ local function dispatch(opts, cmd_opts)
   if not arg or arg == "" then
     -- Current line mode
     local cursor = api.nvim_win_get_cursor(0)
+    debug.trace("[%s] scan_range line=%d (current line)", opts.name, cursor[1])
     local matches = opts.scan_range(bufnr, cursor[1], cursor[1])
 
     if #matches == 0 then
@@ -71,12 +79,13 @@ local function dispatch(opts, cmd_opts)
     end
 
     -- Apply directly (no picker for single line)
+    debug.trace("[%s] apply %d match(es) (line)", opts.name, #matches)
     opts.apply_matches(matches)
 
     notify.info(str_fmt("Applied %d migration(s) on line %d", #matches, cursor[1]))
-
   elseif arg == "%" then
     -- Buffer mode with picker
+    debug.trace("[%s] scan_buffer", opts.name)
     local matches = opts.scan_buffer(bufnr)
 
     if #matches == 0 then
@@ -84,10 +93,11 @@ local function dispatch(opts, cmd_opts)
       return
     end
 
+    debug.trace("[%s] show_picker %d match(es) (buffer)", opts.name, #matches)
     opts.show_picker(matches)
-
   elseif arg == "cwd" then
     -- CWD mode with picker
+    debug.trace("[%s] scan_cwd", opts.name)
     local matches = opts.scan_cwd()
 
     if #matches == 0 then
@@ -95,8 +105,8 @@ local function dispatch(opts, cmd_opts)
       return
     end
 
+    debug.trace("[%s] show_picker %d match(es) (cwd)", opts.name, #matches)
     opts.show_picker(matches)
-
   else
     notify.error(str_fmt("Invalid argument: %s. Use: [empty], %%, or cwd", arg))
   end
@@ -109,11 +119,15 @@ function M.register(opts)
     desc = str_fmt("Migration tool: %s", opts.name),
     range = true,
     routes = {
-      { path = {},
+      {
+        path = {},
         args = { { name = "mode", type = "MIGRATE_SCOPE", optional = true } },
         range = true,
-        desc  = str_fmt("Migration tool: %s", opts.name),
-        run   = function(ctx) dispatch(opts, ctx.raw) end },
+        desc = str_fmt("Migration tool: %s", opts.name),
+        run = function(ctx)
+          dispatch(opts, ctx.raw)
+        end,
+      },
     },
   })
 end
