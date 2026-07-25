@@ -121,7 +121,6 @@ function M.batch_write(write_jobs, strategy, on_complete)
     end
 
     on_complete(written, failed)
-
   elseif strategy == "async" then
     -- Asynchronous: track completion with counter
     local total = #write_jobs
@@ -150,7 +149,6 @@ function M.batch_write(write_jobs, strategy, on_complete)
         end
       end)
     end
-
   else
     error(string.format("Invalid write strategy: %s (must be 'sync' or 'async')", strategy))
   end

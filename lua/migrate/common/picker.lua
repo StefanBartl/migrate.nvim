@@ -36,125 +36,133 @@ function M.show(matches, opts)
     return
   end
 
-  pickers.new({}, {
-    prompt_title = opts.title,
+  pickers
+    .new({}, {
+      prompt_title = opts.title,
 
-    finder = finders.new_table({
-      results = matches,
-      entry_maker = function(match)
-        local display_text = opts.format_entry(match)
+      finder = finders.new_table({
+        results = matches,
+        entry_maker = function(match)
+          local display_text = opts.format_entry(match)
 
-        -- Split into location and content
-        local location = display_text:match("^(.-)  ") or display_text:sub(1, 35)
-        local content = display_text:match("  (.+)$") or ""
+          -- Split into location and content
+          local location = display_text:match("^(.-)  ") or display_text:sub(1, 35)
+          local content = display_text:match("  (.+)$") or ""
 
-        -- Format as simple string (no entry_display for now)
-        local display_str = string.format("%-35s │ %s", location, content)
+          -- Format as simple string (no entry_display for now)
+          local display_str = string.format("%-35s │ %s", location, content)
 
-        return {
-          value = match,
-          ordinal = display_text,
-          display = display_str,
-          filename = match.fname,
-          lnum = match.lnum,
-        }
-      end,
-    }),
+          return {
+            value = match,
+            ordinal = display_text,
+            display = display_str,
+            filename = match.fname,
+            lnum = match.lnum,
+          }
+        end,
+      }),
 
-    previewer = previewers.new_buffer_previewer({
-      title = "Migrated Preview",
-      define_preview = function(self, entry)
-        local lines = opts.format_preview(entry.value)
+      previewer = previewers.new_buffer_previewer({
+        title = "Migrated Preview",
+        define_preview = function(self, entry)
+          local lines = opts.format_preview(entry.value)
 
-        -- Flatten: split any lines containing newlines
-        local flattened = {}
-        for _, line in ipairs(lines) do
-          if type(line) == "string" then
-            for subline in line:gmatch("[^\r\n]+") do
-              table.insert(flattened, subline)
+          -- Flatten: split any lines containing newlines
+          local flattened = {}
+          for _, line in ipairs(lines) do
+            if type(line) == "string" then
+              for subline in line:gmatch("[^\r\n]+") do
+                table.insert(flattened, subline)
+              end
+              -- Handle empty lines (when line is just "\n")
+              if line:match("^[\r\n]+$") then
+                table.insert(flattened, "")
+              end
+            else
+              table.insert(flattened, tostring(line))
             end
-            -- Handle empty lines (when line is just "\n")
-            if line:match("^[\r\n]+$") then
-              table.insert(flattened, "")
-            end
-          else
-            table.insert(flattened, tostring(line))
+          end
+
+          api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, flattened)
+          api.nvim_set_option_value("filetype", "lua", { buf = self.state.bufnr })
+
+          if #flattened > 0 then
+            api.nvim_buf_set_extmark(
+              self.state.bufnr,
+              ns,
+              0,
+              0,
+              { end_row = 1, hl_group = "DiffAdd" }
+            )
+          end
+        end,
+      }),
+
+      sorter = conf.generic_sorter({}),
+      selection_caret = "▶ ",
+
+      attach_mappings = function(prompt_bufnr, map)
+        -- Helper function to apply migrations
+        local function apply_migrations(selections)
+          actions.close(prompt_bufnr)
+
+          local ok, err = pcall(opts.on_apply, selections)
+          if not ok then
+            notify.error("Migration failed: " .. tostring(err))
           end
         end
 
-        api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, flattened)
-        api.nvim_set_option_value("filetype", "lua", { buf = self.state.bufnr })
+        -- Replace default <CR> action (apply selected/multi-selected)
+        actions.select_default:replace(function()
+          local picker = action_state.get_current_picker(prompt_bufnr)
+          local selections = picker:get_multi_selection()
 
-        if #flattened > 0 then
-          api.nvim_buf_set_extmark(self.state.bufnr, ns, 0, 0, { end_row = 1, hl_group = "DiffAdd" })
-        end
-      end,
-    }),
-
-    sorter = conf.generic_sorter({}),
-    selection_caret = "▶ ",
-
-    attach_mappings = function(prompt_bufnr, map)
-      -- Helper function to apply migrations
-      local function apply_migrations(selections)
-        actions.close(prompt_bufnr)
-
-        local ok, err = pcall(opts.on_apply, selections)
-        if not ok then
-          notify.error("Migration failed: " .. tostring(err))
-        end
-      end
-
-      -- Replace default <CR> action (apply selected/multi-selected)
-      actions.select_default:replace(function()
-        local picker = action_state.get_current_picker(prompt_bufnr)
-        local selections = picker:get_multi_selection()
-
-        if vim.tbl_isempty(selections) then
-          local current = action_state.get_selected_entry()
-          selections = { current }
-        end
-
-        local matches_to_apply = {}
-        for _, entry in ipairs(selections) do
-          if entry and entry.value then
-            table.insert(matches_to_apply, entry.value)
+          if vim.tbl_isempty(selections) then
+            local current = action_state.get_selected_entry()
+            selections = { current }
           end
-        end
 
-        apply_migrations(matches_to_apply)
-      end)
+          local matches_to_apply = {}
+          for _, entry in ipairs(selections) do
+            if entry and entry.value then
+              table.insert(matches_to_apply, entry.value)
+            end
+          end
 
-      -- Batch apply: Apply ALL matches (not just selected)
-      -- Multiple keybindings for compatibility
+          apply_migrations(matches_to_apply)
+        end)
 
-      -- <C-a> (Ctrl-A) - Most reliable
-      map({ "i", "n" }, "<C-a>", function()
-        notify.info(string.format("Applying all %d matches...", #matches))
-        apply_migrations(matches)
-      end)
+        -- Batch apply: Apply ALL matches (not just selected)
+        -- Multiple keybindings for compatibility
 
-      -- <S-A> (Shift-A) - Alternative
-      map({ "i", "n" }, "<S-A>", function()
-        notify.info(string.format("Applying all %d matches...", #matches))
-        apply_migrations(matches)
-      end)
+        -- <C-a> (Ctrl-A) - Most reliable
+        map({ "i", "n" }, "<C-a>", function()
+          notify.info(string.format("Applying all %d matches...", #matches))
+          apply_migrations(matches)
+        end)
 
-      -- <M-a> (Alt-A) - Another alternative
-      map({ "i", "n" }, "<M-a>", function()
-        notify.info(string.format("Applying all %d matches...", #matches))
-        apply_migrations(matches)
-      end)
+        -- <S-A> (Shift-A) - Alternative
+        map({ "i", "n" }, "<S-A>", function()
+          notify.info(string.format("Applying all %d matches...", #matches))
+          apply_migrations(matches)
+        end)
 
-      -- <C-y> (Ctrl-Y) - "Yes to all"
-      map({ "i", "n" }, "<C-y>", function()
-        notify.info(string.format("Applying all %d matches...", #matches))
-        apply_migrations(matches)
-      end)
+        -- <M-a> (Alt-A) - Another alternative
+        map({ "i", "n" }, "<M-a>", function()
+          notify.info(string.format("Applying all %d matches...", #matches))
+          apply_migrations(matches)
+        end)
 
-      return true
-    end,
-  }):find()
+        -- <C-y> (Ctrl-Y) - "Yes to all"
+        map({ "i", "n" }, "<C-y>", function()
+          notify.info(string.format("Applying all %d matches...", #matches))
+          apply_migrations(matches)
+        end)
+
+        return true
+      end,
+    })
+    :find()
 end
 
 return M

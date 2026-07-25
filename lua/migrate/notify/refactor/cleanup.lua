@@ -30,7 +30,9 @@ function M.remove_aliases(bufnr)
   end
 
   -- Remove in reverse order to avoid offset issues
-  table.sort(lines_to_remove, function(a, b) return a > b end)
+  table.sort(lines_to_remove, function(a, b)
+    return a > b
+  end)
 
   for _, line_num in ipairs(lines_to_remove) do
     api.nvim_buf_set_lines(bufnr, line_num - 1, line_num, false, {})

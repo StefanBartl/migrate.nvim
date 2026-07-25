@@ -16,11 +16,11 @@ local function check_import(bufnr)
   local import_line = nil
 
   for i, line in ipairs(lines) do
-    if line:match('local%s+notify%s*=%s*require%s*%(%s*["\']lib%.notify["\']%s*%)') then
+    if line:match("local%s+notify%s*=%s*require%s*%(%s*[\"']lib%.notify[\"']%s*%)") then
       has_simple = true
       import_line = i
 
-      if line:match('%.create%s*%(') then
+      if line:match("%.create%s*%(") then
         has_create = true
       end
     end
@@ -61,14 +61,14 @@ function M.inject(bufnr, module_name)
       if ok then
         module_name = get_module_path(fname)
       end
-    else
     end
   end
 
   -- Determine what import line to use
   local import_str
   if module_name and module_name ~= "" then
-    import_str = string.format('local notify = require("lib.nvim.notify").create("[%s]")', module_name)
+    import_str =
+      string.format('local notify = require("lib.nvim.notify").create("[%s]")', module_name)
   else
     import_str = 'local notify = require("lib.nvim.notify").create("")'
   end
@@ -95,13 +95,7 @@ function M.inject(bufnr, module_name)
 
   -- No import exists, add new one
   local insert_pos = find_first_code_line(bufnr)
-  api.nvim_buf_set_lines(
-    bufnr,
-    insert_pos,
-    insert_pos,
-    false,
-    { import_str, "" }
-  )
+  api.nvim_buf_set_lines(bufnr, insert_pos, insert_pos, false, { import_str, "" })
   return true
 end
 
