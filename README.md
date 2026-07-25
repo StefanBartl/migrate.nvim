@@ -28,8 +28,8 @@ Telescope picker and preview for anything past single-line scope.
 {
   "StefanBartl/migrate.nvim",
   dependencies = { "StefanBartl/lib.nvim" },
-  cmd = { "MigrateOpt", "MigrateNotify" },
-  opts = {}, -- opt + notify both enabled by default
+  cmd = { "MigrateOpt", "MigrateNotify", "MigrateHl", "MigrateLsp" },
+  opts = {}, -- opt + notify + hl + lsp all enabled by default
 }
 ```
 
@@ -37,6 +37,8 @@ Telescope picker and preview for anything past single-line scope.
 :MigrateOpt          " migrate current line
 :MigrateNotify %      " migrate whole buffer, via Telescope picker
 :MigrateOpt cwd       " migrate whole working directory, via Telescope picker
+:MigrateHl %          " vim.highlight.* -> vim.hl.*
+:MigrateLsp %         " vim.lsp.buf_get_clients()/get_active_clients() -> vim.lsp.get_clients()
 ```
 
 Requires [lib.nvim](https://github.com/StefanBartl/lib.nvim) and
