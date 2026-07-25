@@ -5,6 +5,7 @@
 
 local notify = require("lib.nvim.notify").create("[migrate.notify]")
 local composer = require("lib.nvim.usercmd.composer")
+local debug = require("migrate.common.debug")
 
 local lazy = require("lib.lua.lazy")
 local picker = lazy.require("migrate.common.picker")
@@ -168,6 +169,8 @@ end
 local function apply_matches(matches, module_name, auto_write)
   auto_write = auto_write or false
 
+  debug.trace("apply_matches: %d match(es), auto_write=%s", #matches, tostring(auto_write))
+
   -- Defer entire migration to next event loop tick
   vim.schedule(function()
     local by_buffer = {}
@@ -228,6 +231,7 @@ local function apply_matches(matches, module_name, auto_write)
 
     -- Execute writes
     if #write_jobs > 0 then
+      debug.trace("write: strategy=%s jobs=%d", WRITE_STRATEGY, #write_jobs)
       write_ops.batch_write(write_jobs, WRITE_STRATEGY, function(written, failed)
         if total_applied > 0 then
           notify.info(string.format("Applied %d migration(s)", total_applied))
@@ -252,6 +256,8 @@ end
 --------------------------------------------------------------------------------
 
 local function show_picker_impl(matches, module_name, auto_write)
+  debug.trace("show_picker: %d match(es), module_name=%s", #matches, tostring(module_name))
+
   -- Add helpful prompt suffix
   local title =
     string.format("Migrate vim.notify → lib.notify (%d matches) | <C-a> Apply All", #matches)
@@ -321,7 +327,9 @@ end
 -- 1st positional: mode, prefix-filtered -- matches the pre-migration
 -- completion verbatim (unlike MigrateOpt's factory, this one *does* filter).
 composer.register_type("MIGRATE_NOTIFY_SCOPE", {
-  validate = function(raw) return true, raw, nil end,
+  validate = function(raw)
+    return true, raw, nil
+  end,
   complete = function(arg_lead)
     local completions = { "%", "cwd" }
     if arg_lead == "" then
@@ -340,7 +348,9 @@ composer.register_type("MIGRATE_NOTIFY_SCOPE", {
 -- 2nd positional: module_name -- no completion, matches the pre-migration
 -- behavior (`return {}` beyond the first argument) verbatim.
 composer.register_type("MIGRATE_MODULE_NAME", {
-  validate = function(raw) return true, raw, nil end,
+  validate = function(raw)
+    return true, raw, nil
+  end,
 })
 
 ---Run one :MigrateNotify invocation. `cmd_opts` is composer's `ctx.raw`
@@ -355,11 +365,12 @@ local function dispatch(cmd_opts)
 
   local bufnr = api.nvim_get_current_buf()
 
-  -- Determine auto-write behavior
-  local auto_write = false
+  -- Determine auto-write behavior (only the cwd branch below ever reads this)
+  local auto_write
 
   if cmd_opts.range > 0 then
     -- Range mode: no auto-write (single buffer, user can save manually)
+    debug.trace("scan_range %d-%d", cmd_opts.line1, cmd_opts.line2)
     local matches = scan_range(bufnr, cmd_opts.line1, cmd_opts.line2)
     if #matches == 0 then
       notify.warn("No matches in range")
@@ -369,6 +380,7 @@ local function dispatch(cmd_opts)
   elseif mode == "" then
     -- Current line: no auto-write
     local cursor = api.nvim_win_get_cursor(0)
+    debug.trace("scan_range line=%d (current line)", cursor[1])
     local matches = scan_range(bufnr, cursor[1], cursor[1])
     if #matches == 0 then
       notify.warn("No matches on current line")
@@ -377,6 +389,7 @@ local function dispatch(cmd_opts)
     apply_matches(matches, module_name, false)
   elseif mode == "%" then
     -- Buffer mode: no auto-write (user can save manually)
+    debug.trace("scan_buffer")
     local matches = scan_buffer(bufnr)
     if #matches == 0 then
       notify.warn("No matches in buffer")
@@ -387,6 +400,7 @@ local function dispatch(cmd_opts)
     -- ✅ CWD mode: AUTO-WRITE enabled
     auto_write = true
 
+    debug.trace("scan_cwd")
     local matches = scan_cwd()
     if #matches == 0 then
       notify.warn("No matches in cwd")
@@ -404,14 +418,18 @@ function M.enable()
     desc = "Migrate vim.notify to lib.notify",
     range = true,
     routes = {
-      { path = {},
+      {
+        path = {},
         args = {
-          { name = "mode",        type = "MIGRATE_NOTIFY_SCOPE", optional = true },
-          { name = "module_name", type = "MIGRATE_MODULE_NAME",  optional = true },
+          { name = "mode", type = "MIGRATE_NOTIFY_SCOPE", optional = true },
+          { name = "module_name", type = "MIGRATE_MODULE_NAME", optional = true },
         },
         range = true,
-        desc  = "Migrate vim.notify to lib.notify",
-        run   = function(ctx) dispatch(ctx.raw) end },
+        desc = "Migrate vim.notify to lib.notify",
+        run = function(ctx)
+          dispatch(ctx.raw)
+        end,
+      },
     },
   })
 end
