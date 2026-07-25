@@ -17,9 +17,8 @@ function M.detect(bufnr)
   for _, line in ipairs(lines) do
     -- Pattern 1: local notify, levels = vim.notify, vim.log.levels
     -- Make pattern more flexible with %s* for optional whitespace
-    local n, l = line:match(
-      "local%s+([%w_]+)%s*,%s*([%w_]+)%s*=%s*vim%.notify%s*,%s*vim%.log%.levels"
-    )
+    local n, l =
+      line:match("local%s+([%w_]+)%s*,%s*([%w_]+)%s*=%s*vim%.notify%s*,%s*vim%.log%.levels")
     if n and l then
       notify_alias = n
       levels_alias = l

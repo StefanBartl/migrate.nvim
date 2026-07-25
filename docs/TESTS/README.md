@@ -1,10 +1,11 @@
 # Tests
 
 Headless spec suite for migrate.nvim. Covers the pure, dependency-free logic:
-the `opt` line-migration regex and the `notify` parser/migrator functions.
-`migrate.opt`, `migrate.notify`, and `migrate.common.*` hard-require
-`lib.nvim` and `telescope.nvim` and are therefore out of scope for this
-headless suite (no picker/command/end-to-end coverage here).
+the `opt`/`hl`/`lsp` line-migration regexes and the `notify` parser/migrator
+functions. `migrate.opt`, `migrate.notify`, `migrate.hl`, `migrate.lsp`, and
+`migrate.common.*` hard-require `lib.nvim` and `telescope.nvim` and are
+therefore out of scope for this headless suite (no picker/command/
+end-to-end coverage here).
 
 ## Run
 
@@ -23,7 +24,9 @@ The runner prints one line per spec and exits non-zero on the first failure
 | --- | --- |
 | `harness.lua` | Shared assertions (`eq`, `ok`) and a `scratch(ft)` buffer helper. |
 | `opt_migrator_spec.lua` | `migrate.opt.migrator.migrate_line` — buf/win, get/set, all prefix variants. |
-| `notify_parser_spec.lua` | `migrate.notify.parser.{patterns,migrator}` + end-to-end `parser.scan_buffer`. |
+| `hl_migrator_spec.lua` | `migrate.hl.migrator.migrate_line` — `vim.highlight.*` -> `vim.hl.*`. |
+| `lsp_migrator_spec.lua` | `migrate.lsp.migrator.migrate_line` — `buf_get_clients`/`get_active_clients`. |
+| `notify_parser_spec.lua` | `migrate.notify.parser.{patterns,migrator}` + end-to-end `parser.scan_buffer`, incl. the long-string false-positive guard and multiline aliased/bare `notify(...)`. |
 | `run.lua` | Runner: loads every `*_spec.lua`, reports results, sets exit code. |
 
 ## Adding a spec
