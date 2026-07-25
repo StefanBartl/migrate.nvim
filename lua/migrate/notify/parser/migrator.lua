@@ -5,14 +5,53 @@ local extractor = require("migrate.notify.parser.extractor")
 
 local M = {}
 
+---Find a call's text within a combined (multi-line-joined) string, given a
+---Lua pattern anchoring the call's opening `name(` (e.g. `"vim%.notify%s*%("`).
+---Shared paren-counting helper for every `migrate_*_multiline` function below.
+---@param combined string
+---@param start_pattern string
+---@return string|nil call_text
+local function find_call_text(combined, start_pattern)
+  local call_start = combined:find(start_pattern)
+  if not call_start then
+    return nil
+  end
+
+  local paren_count = 0
+  local call_end = nil
+  local in_call = false
+
+  for i = call_start, #combined do
+    local char = combined:sub(i, i)
+
+    if char == "(" then
+      paren_count = paren_count + 1
+      in_call = true
+    elseif char == ")" then
+      paren_count = paren_count - 1
+
+      if in_call and paren_count == 0 then
+        call_end = i
+        break
+      end
+    end
+  end
+
+  if not call_end then
+    return nil
+  end
+
+  return combined:sub(call_start, call_end)
+end
+
 ---@type table<string, string>
 local LEVEL_MAP = {
   TRACE = "trace",
   DEBUG = "debug",
-  INFO  = "info",
-  WARN  = "warn",
+  INFO = "info",
+  WARN = "warn",
   ERROR = "error",
-  OFF   = "error", -- Fallback for OFF
+  OFF = "error", -- Fallback for OFF
 }
 
 ---@type table<integer, string>
@@ -34,9 +73,8 @@ function M.migrate_vim_notify_line(line)
     return nil, nil
   end
 
-  local msg, level, opts = call_text:match(
-    "vim%.notify%s*%(%s*(.-)%s*,%s*vim%.log%.levels%.(%u+)%s*(.*)%)"
-  )
+  local msg, level, opts =
+    call_text:match("vim%.notify%s*%(%s*(.-)%s*,%s*vim%.log%.levels%.(%u+)%s*(.*)%)")
 
   if not msg or not level or not LEVEL_MAP[level] then
     return nil, nil
@@ -177,16 +215,14 @@ function M.migrate_existing_notify_line(line)
   -- Try different patterns in order of specificity
 
   -- Pattern 1: notify("msg", vim.log.levels.LEVEL, {...})
-  local msg, level, opts = call_text:match(
-    "notify%s*%(%s*(.-)%s*,%s*vim%.log%.levels%.(%u+)%s*(.*)%)"
-  )
+  local msg, level, opts =
+    call_text:match("notify%s*%(%s*(.-)%s*,%s*vim%.log%.levels%.(%u+)%s*(.*)%)")
 
   if msg and level and LEVEL_MAP[level] then
     local has_opts = opts and opts:match("^%s*,%s*(.+)")
     local method = LEVEL_MAP[level]
 
-    local replacement = has_opts
-      and string.format("notify.%s(%s, %s)", method, msg, has_opts)
+    local replacement = has_opts and string.format("notify.%s(%s, %s)", method, msg, has_opts)
       or string.format("notify.%s(%s)", method, msg)
 
     -- WICHTIG: KOMPLETTE Zeile zurückgeben
@@ -197,16 +233,13 @@ function M.migrate_existing_notify_line(line)
   end
 
   -- Pattern 2: notify("msg", log.levels.LEVEL, {...})
-  msg, level, opts = call_text:match(
-    "notify%s*%(%s*(.-)%s*,%s*log%.levels%.(%u+)%s*(.*)%)"
-  )
+  msg, level, opts = call_text:match("notify%s*%(%s*(.-)%s*,%s*log%.levels%.(%u+)%s*(.*)%)")
 
   if msg and level and LEVEL_MAP[level] then
     local has_opts = opts and opts:match("^%s*,%s*(.+)")
     local method = LEVEL_MAP[level]
 
-    local replacement = has_opts
-      and string.format("notify.%s(%s, %s)", method, msg, has_opts)
+    local replacement = has_opts and string.format("notify.%s(%s, %s)", method, msg, has_opts)
       or string.format("notify.%s(%s)", method, msg)
 
     local before = line:sub(1, start_pos - 1)
@@ -216,16 +249,13 @@ function M.migrate_existing_notify_line(line)
   end
 
   -- Pattern 3: notify("msg", levels.LEVEL, {...})
-  msg, level, opts = call_text:match(
-    "notify%s*%(%s*(.-)%s*,%s*levels%.(%u+)%s*(.*)%)"
-  )
+  msg, level, opts = call_text:match("notify%s*%(%s*(.-)%s*,%s*levels%.(%u+)%s*(.*)%)")
 
   if msg and level and LEVEL_MAP[level] then
     local has_opts = opts and opts:match("^%s*,%s*(.+)")
     local method = LEVEL_MAP[level]
 
-    local replacement = has_opts
-      and string.format("notify.%s(%s, %s)", method, msg, has_opts)
+    local replacement = has_opts and string.format("notify.%s(%s, %s)", method, msg, has_opts)
       or string.format("notify.%s(%s)", method, msg)
 
     local before = line:sub(1, start_pos - 1)
@@ -235,16 +265,13 @@ function M.migrate_existing_notify_line(line)
   end
 
   -- Pattern 4: notify("msg", LEVEL, {...}) - direct level name
-  msg, level, opts = call_text:match(
-    "notify%s*%(%s*(.-)%s*,%s*(%u+)%s*(.*)%)"
-  )
+  msg, level, opts = call_text:match("notify%s*%(%s*(.-)%s*,%s*(%u+)%s*(.*)%)")
 
   if msg and level and LEVEL_MAP[level] then
     local has_opts = opts and opts:match("^%s*,%s*(.+)")
     local method = LEVEL_MAP[level]
 
-    local replacement = has_opts
-      and string.format("notify.%s(%s, %s)", method, msg, has_opts)
+    local replacement = has_opts and string.format("notify.%s(%s, %s)", method, msg, has_opts)
       or string.format("notify.%s(%s)", method, msg)
 
     local before = line:sub(1, start_pos - 1)
@@ -254,9 +281,7 @@ function M.migrate_existing_notify_line(line)
   end
 
   -- Pattern 5: notify("msg", 2, {...}) - integer level
-  msg, level, opts = call_text:match(
-    "notify%s*%(%s*(.-)%s*,%s*(%d+)%s*(.*)%)"
-  )
+  msg, level, opts = call_text:match("notify%s*%(%s*(.-)%s*,%s*(%d+)%s*(.*)%)")
 
   if msg and level then
     local level_int = tonumber(level)
@@ -264,8 +289,7 @@ function M.migrate_existing_notify_line(line)
       local has_opts = opts and opts:match("^%s*,%s*(.+)")
       local method = INT_LEVEL_MAP[level_int]
 
-      local replacement = has_opts
-        and string.format("notify.%s(%s, %s)", method, msg, has_opts)
+      local replacement = has_opts and string.format("notify.%s(%s, %s)", method, msg, has_opts)
         or string.format("notify.%s(%s)", method, msg)
 
       local before = line:sub(1, start_pos - 1)
@@ -287,40 +311,13 @@ function M.migrate_multiline(lines)
   local combined = table.concat(lines, " ")
   local indent = lines[1]:match("^(%s*)") or ""
 
-  local call_start = combined:find("vim%.notify%s*%(")
-  if not call_start then
+  local call_text = find_call_text(combined, "vim%.notify%s*%(")
+  if not call_text then
     return nil, nil
   end
 
-  local paren_count = 0
-  local call_end = nil
-  local in_call = false
-
-  for i = call_start, #combined do
-    local char = combined:sub(i, i)
-
-    if char == "(" then
-      paren_count = paren_count + 1
-      in_call = true
-    elseif char == ")" then
-      paren_count = paren_count - 1
-
-      if in_call and paren_count == 0 then
-        call_end = i
-        break
-      end
-    end
-  end
-
-  if not call_end then
-    return nil, nil
-  end
-
-  local call_text = combined:sub(call_start, call_end)
-
-  local msg, level, opts = call_text:match(
-    "vim%.notify%s*%(%s*(.-)%s*,%s*vim%.log%.levels%.(%u+)%s*(.*)%)"
-  )
+  local msg, level, opts =
+    call_text:match("vim%.notify%s*%(%s*(.-)%s*,%s*vim%.log%.levels%.(%u+)%s*(.*)%)")
 
   if not msg or not level or not LEVEL_MAP[level] then
     return nil, nil
@@ -336,12 +333,116 @@ function M.migrate_multiline(lines)
 
   if opts_arg then
     opts_arg = opts_arg:gsub("%s+", " "):match("^%s*(.-)%s*$")
-    migrated = string.format('%snotify.%s(%s, %s)', indent, method, msg, opts_arg)
+    migrated = string.format("%snotify.%s(%s, %s)", indent, method, msg, opts_arg)
   else
-    migrated = string.format('%snotify.%s(%s)', indent, method, msg)
+    migrated = string.format("%snotify.%s(%s)", indent, method, msg)
   end
 
   return migrated, level
+end
+
+---Migrate multiline aliased notify (`notify_alias(...)`).
+---@param lines string[]
+---@param notify_alias string
+---@param levels_alias string|nil
+---@return string|nil migrated, string|nil level
+function M.migrate_aliased_multiline(lines, notify_alias, levels_alias)
+  local combined = table.concat(lines, " ")
+  local indent = lines[1]:match("^(%s*)") or ""
+
+  local escaped_notify = notify_alias:gsub("([%.%-%+%*%?%[%]%^%$%(%)%%])", "%%%1")
+  local escaped_levels = levels_alias and levels_alias:gsub("([%.%-%+%*%?%[%]%^%$%(%)%%])", "%%%1")
+
+  local call_text = find_call_text(combined, escaped_notify .. "%s*%(")
+  if not call_text then
+    return nil, nil
+  end
+
+  local msg, level, opts
+  if escaped_levels then
+    msg, level, opts = call_text:match(
+      escaped_notify .. "%s*%(%s*(.-)%s*,%s*" .. escaped_levels .. "%.(%u+)%s*(.*)%)"
+    )
+  end
+
+  if not (msg and level and LEVEL_MAP[level]) then
+    msg, level, opts =
+      call_text:match(escaped_notify .. "%s*%(%s*(.-)%s*,%s*vim%.log%.levels%.(%u+)%s*(.*)%)")
+  end
+
+  if not msg or not level or not LEVEL_MAP[level] then
+    return nil, nil
+  end
+
+  local has_opts = opts and opts:match("^%s*,%s*(.+)")
+  msg = msg:gsub("%s+", " "):match("^%s*(.-)%s*$")
+
+  local method = LEVEL_MAP[level]
+  local migrated
+
+  if has_opts then
+    local opts_arg = has_opts:gsub("%s+", " "):match("^%s*(.-)%s*$")
+    migrated = string.format("%snotify.%s(%s, %s)", indent, method, msg, opts_arg)
+  else
+    migrated = string.format("%snotify.%s(%s)", indent, method, msg)
+  end
+
+  return migrated, level
+end
+
+---Migrate multiline bare/existing `notify(...)` (not `vim.notify`, not aliased).
+---@param lines string[]
+---@return string|nil migrated, string|nil level
+function M.migrate_existing_multiline(lines)
+  local combined = table.concat(lines, " ")
+  local indent = lines[1]:match("^(%s*)") or ""
+
+  local call_text = find_call_text(combined, "notify%s*%(")
+  if not call_text then
+    return nil, nil
+  end
+
+  -- Same pattern ladder as migrate_existing_notify_line, in order of specificity.
+  local candidates = {
+    { pat = "notify%s*%(%s*(.-)%s*,%s*vim%.log%.levels%.(%u+)%s*(.*)%)", kind = "name" },
+    { pat = "notify%s*%(%s*(.-)%s*,%s*log%.levels%.(%u+)%s*(.*)%)", kind = "name" },
+    { pat = "notify%s*%(%s*(.-)%s*,%s*levels%.(%u+)%s*(.*)%)", kind = "name" },
+    { pat = "notify%s*%(%s*(.-)%s*,%s*(%u+)%s*(.*)%)", kind = "name" },
+    { pat = "notify%s*%(%s*(.-)%s*,%s*(%d+)%s*(.*)%)", kind = "int" },
+  }
+
+  for _, candidate in ipairs(candidates) do
+    local msg, level, opts = call_text:match(candidate.pat)
+    if msg and level then
+      local method, level_name
+
+      if candidate.kind == "int" then
+        local level_int = tonumber(level)
+        method = level_int and INT_LEVEL_MAP[level_int]
+        level_name = method and method:upper()
+      elseif LEVEL_MAP[level] then
+        method = LEVEL_MAP[level]
+        level_name = level
+      end
+
+      if method then
+        local has_opts = opts and opts:match("^%s*,%s*(.+)")
+        msg = msg:gsub("%s+", " "):match("^%s*(.-)%s*$")
+
+        local migrated
+        if has_opts then
+          local opts_arg = has_opts:gsub("%s+", " "):match("^%s*(.-)%s*$")
+          migrated = string.format("%snotify.%s(%s, %s)", indent, method, msg, opts_arg)
+        else
+          migrated = string.format("%snotify.%s(%s)", indent, method, msg)
+        end
+
+        return migrated, level_name
+      end
+    end
+  end
+
+  return nil, nil
 end
 
 return M
