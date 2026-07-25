@@ -9,15 +9,18 @@
 -- harness, prints a per-spec result and exits non-zero on the first failing
 -- spec (so it is CI-friendly).
 --
--- Only covers the pure, dependency-free logic (opt.migrator, notify.parser.*):
--- migrate.opt/migrate.notify/migrate.common.* hard-require lib.nvim and
--- telescope.nvim and are out of scope for this headless suite.
+-- Only covers the pure, dependency-free logic (opt/hl/lsp.migrator,
+-- notify.parser.*): migrate.opt/migrate.notify/migrate.hl/migrate.lsp/
+-- migrate.common.* hard-require lib.nvim and telescope.nvim and are out of
+-- scope for this headless suite.
 
 local dir = debug.getinfo(1, "S").source:sub(2):match("(.*[/\\])") or "./"
 local H = dofile(dir .. "harness.lua")
 
 local specs = {
   "opt_migrator_spec.lua",
+  "hl_migrator_spec.lua",
+  "lsp_migrator_spec.lua",
   "notify_parser_spec.lua",
 }
 

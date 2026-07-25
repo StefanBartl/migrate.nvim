@@ -28,12 +28,18 @@ end
 function M.check()
   health.start("migrate.nvim")
 
+  local registry = require("migrate.registry")
+
   ---------------------------------------------------------------------------
   -- Core modules
   ---------------------------------------------------------------------------
   local core_ok = check_module("migrate")
-  check_module("migrate.notify")
-  check_module("migrate.opt")
+
+  local module_names = vim.tbl_keys(registry.list())
+  table.sort(module_names)
+  for _, name in ipairs(module_names) do
+    check_module(registry.list()[name].module)
+  end
 
   if not core_ok then
     health.error("Core module 'migrate' did not load — aborting further checks")
@@ -50,7 +56,7 @@ function M.check()
   end
 
   if pcall(require, "lib.nvim.usercmd.composer") then
-    health.ok("lib.nvim.usercmd.composer available (:MigrateOpt/:MigrateNotify)")
+    health.ok("lib.nvim.usercmd.composer available (user commands)")
   else
     health.error("lib.nvim.usercmd.composer not found — commands will fail to register")
   end
@@ -67,7 +73,7 @@ function M.check()
   if vim.fn.executable("rg") == 1 then
     health.ok("ripgrep (rg) found — cwd-wide scanning enabled")
   else
-    health.warn("ripgrep (rg) not found — ':MigrateOpt cwd' cannot scan the workspace")
+    health.warn("ripgrep (rg) not found — 'cwd' scans cannot scan the workspace")
   end
 
   ---------------------------------------------------------------------------
@@ -76,16 +82,20 @@ function M.check()
   local cfg_ok, config = pcall(require, "migrate.config")
   if cfg_ok then
     local cfg = config.get()
-    health.info(string.format("opt=%s, notify=%s", tostring(cfg.opt), tostring(cfg.notify)))
+
+    local parts = {}
+    for _, name in ipairs(module_names) do
+      table.insert(parts, string.format("%s=%s", name, tostring(cfg[name])))
+    end
+    table.insert(parts, string.format("debug=%s", tostring(cfg.debug)))
+    health.info(table.concat(parts, ", "))
 
     if type(cfg.keymaps) == "table" then
-      health.info(
-        string.format(
-          "keymaps: opt=%s, notify=%s",
-          tostring(cfg.keymaps.opt or false),
-          tostring(cfg.keymaps.notify or false)
-        )
-      )
+      local km_parts = {}
+      for _, name in ipairs(module_names) do
+        table.insert(km_parts, string.format("%s=%s", name, tostring(cfg.keymaps[name] or false)))
+      end
+      health.info("keymaps: " .. table.concat(km_parts, ", "))
 
       if require("migrate.bindings.which_key").available() then
         health.ok("which-key detected (keymap descriptions are picked up automatically)")
