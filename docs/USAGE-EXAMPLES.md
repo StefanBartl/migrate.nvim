@@ -1,10 +1,10 @@
-# usrcmds.migrate - Usage Examples
+# migrate.nvim - Usage Examples
 
 Praktische Beispiele für alle Migrations-Szenarien.
 
 ## Table of content
 
-- [usrcmds.migrate - Usage Examples](#usrcmdsmigrate-usage-examples)
+- [migrate.nvim - Usage Examples](#migratenvim---usage-examples)
   - [Setup](#setup)
     - [Minimal Setup](#minimal-setup)
     - [Selective Setup](#selective-setup)
@@ -50,7 +50,7 @@ Praktische Beispiele für alle Migrations-Szenarien.
 
 ```lua
 -- lua/config/migrate.lua
-require("usrcmds.migrate").setup()
+require("migrate").setup()
 
 -- Aktiviert:
 -- :MigrateOpt
@@ -60,7 +60,7 @@ require("usrcmds.migrate").setup()
 ### Selective Setup
 
 ```lua
-require("usrcmds.migrate").setup({
+require("migrate").setup({
   opt = false,     -- Deaktiviert :MigrateOpt
   notify = true,   -- Aktiviert nur :MigrateNotify
 })
@@ -70,8 +70,8 @@ require("usrcmds.migrate").setup({
 
 ```lua
 -- Einzeln aktivieren
-require("usrcmds.migrate.notify").enable()
-require("usrcmds.migrate.opt").enable()
+require("migrate.notify").enable()
+require("migrate.opt").enable()
 ```
 
 ## notify Migration - Scenarios
@@ -102,7 +102,7 @@ return M
 
 **Nachher:**
 ```lua
-local notify = require("lib.notify").create("[myplugin.commands]")
+local notify = require("lib.nvim.notify").create("[myplugin.commands]")
 
 local M = {}
 
@@ -149,7 +149,7 @@ return M
 
 **Nachher:**
 ```lua
-local notify = require("lib.notify").create("[myplugin.ui]")
+local notify = require("lib.nvim.notify").create("[myplugin.ui]")
 
 local M = {}
 
@@ -196,7 +196,7 @@ return M
 
 **Nachher:**
 ```lua
-local notify = require("lib.notify").create("[myplugin.core]")
+local notify = require("lib.nvim.notify").create("[myplugin.core]")
 
 local M = {}
 
@@ -238,7 +238,7 @@ return M
 
 **Nachher:**
 ```lua
-local notify = require("lib.notify").create("[myplugin.formatter]")
+local notify = require("lib.nvim.notify").create("[myplugin.formatter]")
 
 local M = {}
 
@@ -276,7 +276,7 @@ lua/myplugin/
 **Resultat:**
 Alle Files bekommen:
 ```lua
-local notify = require("lib.notify").create("[myplugin]")
+local notify = require("lib.nvim.notify").create("[myplugin]")
 ```
 
 **Alternative:** Individuelle Modul-Namen
@@ -293,10 +293,10 @@ local notify = require("lib.notify").create("[myplugin]")
 Resultat:
 ```lua
 -- ui/window.lua
-local notify = require("lib.notify").create("[myplugin.ui.window]")
+local notify = require("lib.nvim.notify").create("[myplugin.ui.window]")
 
 -- commands.lua
-local notify = require("lib.notify").create("[myplugin.commands]")
+local notify = require("lib.nvim.notify").create("[myplugin.commands]")
 ```
 
 ### Scenario 6: Ohne Modul-Namen
@@ -320,7 +320,7 @@ return M
 
 **Nachher:**
 ```lua
-local notify = require("lib.notify").create("")
+local notify = require("lib.nvim.notify").create("")
 
 local M = {}
 
@@ -435,7 +435,7 @@ nvim lua/myplugin/core.lua
 :! make test
 
 # 6. Commit
-git commit -am "chore: migrate to lib.notify"
+git commit -am "chore: migrate to lib.nvim.notify"
 ```
 
 ### Workflow 2: Schrittweise Migration
@@ -480,7 +480,7 @@ u
 
 **File:**
 ```lua
-local notify = require("lib.notify").create("")
+local notify = require("lib.nvim.notify").create("")
 
 local M = {}
 
@@ -587,8 +587,8 @@ Nach Migration prüfen:
 ## Weitere Beispiele
 
 Siehe auch:
-- `notify/doc/migrate-notify.txt` - Vollständige Doku
-- `docs/technical.md` - Implementierungs-Details
-- `docs/patterns.md` - Pattern-Matching Guide
+- `doc/migrate.txt` - Vollständige Doku (`:h migrate`)
+- `docs/Technical-DeepDive.md` - Implementierungs-Details
+- `docs/PatternMatchingGuide.md` - Pattern-Matching Guide
 
 ---
