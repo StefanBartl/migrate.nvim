@@ -18,6 +18,7 @@ local str_fmt = string.format
 
 local migrate_line_text = migrator.migrate_line
 
+---@internal
 ---Scan buffer range for matches
 ---@param bufnr integer
 ---@param line1 integer 1-based start
@@ -50,6 +51,7 @@ local function scan_range(bufnr, line1, line2)
   return matches
 end
 
+---@internal
 ---Scan entire buffer
 ---@param bufnr integer
 ---@return MigrateCommon.Match[]
@@ -62,6 +64,7 @@ local function scan_buffer(bufnr)
   return scan_range(bufnr, 1, line_count)
 end
 
+---@internal
 ---Scan cwd using ripgrep
 ---@return MigrateCommon.Match[]
 local function scan_cwd()
@@ -100,8 +103,10 @@ local function scan_cwd()
   return matches
 end
 
+---@internal
 ---Apply migrations
 ---@param matches MigrateCommon.Match[]
+---@return nil
 local function apply_matches(matches)
   for _, match in ipairs(matches) do
     if match.source == "buf" then
@@ -112,8 +117,10 @@ local function apply_matches(matches)
   end
 end
 
+---@internal
 ---Show picker with matches
 ---@param matches MigrateCommon.Match[]
+---@return nil
 local function show_picker_impl(matches)
   picker.show(matches, {
     title = "Migrate vim.highlight -> vim.hl",
@@ -138,6 +145,7 @@ local function show_picker_impl(matches)
 end
 
 --- Enable command
+---@return nil
 function M.enable()
   command.register({
     name = "MigrateHl",

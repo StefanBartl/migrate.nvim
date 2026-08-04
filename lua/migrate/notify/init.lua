@@ -18,7 +18,8 @@ local M = {}
 local api = vim.api
 local tbl_insert = table.insert
 
--- File scope configuration FIX: Config?
+-- File scope configuration
+---@todo make WRITE_STRATEGY configurable via `migrate.config` instead of hardcoded here
 local WRITE_STRATEGY = "async" -- "sync" | "async"
 local write_ops = lazy.require("migrate.notify.refactor.write")
 
@@ -34,6 +35,11 @@ local PLUGIN_ROOT = (function()
   return src:match("^(.*/lua/migrate)/") or ".../lua/migrate"
 end)()
 
+---@internal
+---Whether `filepath` lives inside this plugin's own source tree (so cwd
+---scans never rewrite migrate.nvim's own notify calls).
+---@param filepath string
+---@return boolean
 local function should_exclude(filepath)
   if type(filepath) ~= "string" or filepath == "" then
     return false
@@ -46,6 +52,12 @@ end
 -- Conversion helpers
 --------------------------------------------------------------------------------
 
+---@internal
+---Convert parser matches (`migrate.notify.parser`'s own match shape) into
+---the shared `MigrateCommon.Match[]` shape the picker/apply pipeline uses.
+---@param bufnr integer
+---@param parser_matches UsrCmds.Migrate.Notify.Match[]
+---@return MigrateCommon.Match[]
 local function to_common_matches(bufnr, parser_matches)
   local matches = {}
   local fname = api.nvim_buf_get_name(bufnr)
@@ -74,6 +86,12 @@ end
 -- Scan functions (unchanged)
 --------------------------------------------------------------------------------
 
+---@internal
+---Scan buffer range for matches
+---@param bufnr integer
+---@param line1 integer 1-based start
+---@param line2 integer 1-based end
+---@return MigrateCommon.Match[]
 local function scan_range(bufnr, line1, line2)
   if not api.nvim_buf_is_valid(bufnr) then
     return {}
@@ -97,6 +115,10 @@ local function scan_range(bufnr, line1, line2)
   return to_common_matches(bufnr, range_matches)
 end
 
+---@internal
+---Scan entire buffer
+---@param bufnr integer
+---@return MigrateCommon.Match[]
 local function scan_buffer(bufnr)
   if not api.nvim_buf_is_valid(bufnr) then
     return {}
@@ -112,6 +134,9 @@ local function scan_buffer(bufnr)
   return to_common_matches(bufnr, matches)
 end
 
+---@internal
+---Scan cwd using ripgrep-independent Lua-file discovery (`migrate.common.buffer`).
+---@return MigrateCommon.Match[]
 local function scan_cwd()
   local cwd = vim.fn.getcwd()
   local files = buffer_ops.find_lua_files(cwd)
@@ -162,10 +187,12 @@ end
 -- Application
 --------------------------------------------------------------------------------
 
+---@internal
 ---Apply migrations with optional auto-write (DEFERRED)
 ---@param matches MigrateCommon.Match[]
 ---@param module_name string|nil
 ---@param auto_write boolean|nil
+---@return nil
 local function apply_matches(matches, module_name, auto_write)
   auto_write = auto_write or false
 
@@ -255,6 +282,12 @@ end
 -- Picker
 --------------------------------------------------------------------------------
 
+---@internal
+---Show the migration picker for buffer/cwd modes.
+---@param matches MigrateCommon.Match[]
+---@param module_name string|nil
+---@param auto_write boolean|nil
+---@return nil
 local function show_picker_impl(matches, module_name, auto_write)
   debug.trace("show_picker: %d match(es), module_name=%s", #matches, tostring(module_name))
 
@@ -353,9 +386,11 @@ composer.register_type("MIGRATE_MODULE_NAME", {
   end,
 })
 
+---@internal
 ---Run one :MigrateNotify invocation. `cmd_opts` is composer's `ctx.raw`
 ---(same shape as the original nvim user-command callback opts).
 ---@param cmd_opts table
+---@return nil
 local function dispatch(cmd_opts)
   local args_str = cmd_opts.args
   local parts = vim.split(args_str, "%s+", { trimempty = true })
@@ -413,6 +448,8 @@ local function dispatch(cmd_opts)
   end
 end
 
+---Register the `:MigrateNotify` user command.
+---@return nil
 function M.enable()
   composer.verb("MigrateNotify", {
     desc = "Migrate vim.notify to lib.notify",
