@@ -5,6 +5,7 @@ local M = {}
 
 local api = vim.api
 
+---@internal
 ---Check what kind of import exists
 ---@param bufnr integer
 ---@return boolean has_simple, boolean has_create, integer|nil import_line
@@ -29,6 +30,7 @@ local function check_import(bufnr)
   return has_simple, has_create, import_line
 end
 
+---@internal
 ---Find first non-comment line
 ---@param bufnr integer
 ---@return integer line_idx 0-based index

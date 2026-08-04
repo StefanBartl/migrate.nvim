@@ -5,6 +5,7 @@ local extractor = require("migrate.notify.parser.extractor")
 
 local M = {}
 
+---@internal
 ---Find a call's text within a combined (multi-line-joined) string, given a
 ---Lua pattern anchoring the call's opening `name(` (e.g. `"vim%.notify%s*%("`).
 ---Shared paren-counting helper for every `migrate_*_multiline` function below.

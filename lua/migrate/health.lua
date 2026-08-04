@@ -11,6 +11,7 @@ local M = {}
 -- Neovim health integration (vim.health on 0.8+, legacy "health" otherwise)
 local health = vim.health or require("health")
 
+---@internal
 ---Report a successful require, or an error, for a module.
 ---@param modname string
 ---@return boolean ok

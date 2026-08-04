@@ -40,10 +40,12 @@ composer.register_type("MIGRATE_SCOPE", {
   end,
 })
 
+---@internal
 --- Run one migration invocation. `cmd_opts` is composer's `ctx.raw` (same
 --- shape as the original nvim user-command callback opts).
 ---@param opts MigrateCommon.CommandOpts
 ---@param cmd_opts table
+---@return nil
 local function dispatch(opts, cmd_opts)
   local arg = cmd_opts.args:match("%S+")
   local bufnr = api.nvim_get_current_buf()

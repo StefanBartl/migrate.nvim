@@ -15,6 +15,7 @@ local M = {}
 
 local api = vim.api
 
+---@internal
 ---Buffer lines joined for a plain-content write, matching vim.fn.writefile's
 ---own edge case: an empty buffer produces an empty (0-byte) file, not a file
 ---containing a single "\n".
