@@ -29,8 +29,11 @@ local write_ops = lazy.require("migrate.notify.refactor.write")
 
 -- Plugin's own source root, derived once from this file's location. Files inside
 -- it are skipped during cwd scans so the tool never rewrites its own notify calls.
+-- `_G.debug` (not the `debug` local above, which is this file's own
+-- migrate.common.debug logger, shadowing the builtin): needs the real Lua
+-- `debug` library's `getinfo`, not `.trace()`.
 local PLUGIN_ROOT = (function()
-  local src = debug.getinfo(1, "S").source:sub(2):gsub("\\", "/")
+  local src = _G.debug.getinfo(1, "S").source:sub(2):gsub("\\", "/")
   -- .../lua/migrate/notify/init.lua  ->  .../lua/migrate/
   return src:match("^(.*/lua/migrate)/") or ".../lua/migrate"
 end)()
