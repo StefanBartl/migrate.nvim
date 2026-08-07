@@ -1,0 +1,20 @@
+{
+  "tools": [
+    {
+      "bin": "rg",
+      "required": false,
+      "why": "Powers the highlight-group, LSP-config, and option-usage search features (hl/, lsp/, opt/) — without it those searches are unavailable rather than falling back to something slower.",
+      "pkg": {
+        "apt": "ripgrep",
+        "dnf": "ripgrep",
+        "pacman": "ripgrep",
+        "zypper": "ripgrep",
+        "apk": "ripgrep",
+        "brew": "ripgrep",
+        "winget": "BurntSushi.ripgrep.MSVC",
+        "scoop": "ripgrep",
+        "choco": "ripgrep"
+      }
+    }
+  ]
+}
