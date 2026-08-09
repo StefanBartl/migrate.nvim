@@ -46,6 +46,13 @@ Requires [lib.nvim](https://github.com/StefanBartl/lib.nvim) and
 [docs/installation.md](docs/installation.md) for full requirements and setup
 for lazy.nvim/packer.nvim/vim-plug.
 
+`rg` (ripgrep) is optional, enabling `cwd`-wide scans — declared in
+[`docs/install.json`](docs/install.json) and parsed by lib.nvim's
+[`deps` module](https://github.com/StefanBartl/lib.nvim/blob/main/lua/lib/nvim/deps/README.md):
+a popup explains this the first time `setup()` runs after installing
+migrate.nvim, `:Lib deps show migrate.nvim` repeats it any time, and it's
+also folded into `:checkhealth migrate`.
+
 ---
 
 ## Documentation
