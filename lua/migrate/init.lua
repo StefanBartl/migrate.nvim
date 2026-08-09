@@ -31,12 +31,16 @@ function M.setup(opts)
 
   -- One-time (persisted across restarts) popup on the first setup() after
   -- installing this plugin: which CLI tools it wants and why
-  -- (docs/install.json). `:Lib deps show migrate.nvim` thereafter. pcall'd:
+  -- (docs/install.json). `:Lib deps show migrate.nvim` thereafter.
+  -- `config.get().deps_popup = false` (set right in the setup() spec,
+  -- config/DEFAULTS.lua) disables it for this plugin specifically. pcall'd:
   -- an older lib.nvim without lib.nvim.deps mustn't break setup() over an
   -- informational popup.
-  local ok_deps, deps = pcall(require, "lib.nvim.deps")
-  if ok_deps then
-    deps.show_once("migrate.nvim")
+  if config.get().deps_popup ~= false then
+    local ok_deps, deps = pcall(require, "lib.nvim.deps")
+    if ok_deps then
+      deps.show_once("migrate.nvim")
+    end
   end
 end
 

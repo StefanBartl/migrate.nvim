@@ -9,6 +9,7 @@
 ---@field lsp boolean|nil Enable vim.lsp.buf_get_clients/get_active_clients migration (:MigrateLsp)
 ---@field keymaps UsrCmds.Migrate.Keymaps|false|nil Optional keymaps (default: false = disabled)
 ---@field debug boolean|nil Trace the scan -> picker -> apply -> write pipeline (default: false)
+---@field deps_popup boolean|nil Show the lib.nvim.deps "declared tools" popup once, ever, on first setup() after install (default true; needs lib.nvim.deps — a no-op without it)
 
 ---@class UsrCmds.Migrate.Keymaps
 ---@field opt string|false|nil Keymap that runs :MigrateOpt (current line)
