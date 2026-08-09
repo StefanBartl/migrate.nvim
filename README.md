@@ -51,10 +51,11 @@ for lazy.nvim/packer.nvim/vim-plug.
 [`deps` module](https://github.com/StefanBartl/lib.nvim/blob/main/lua/lib/nvim/deps/README.md):
 a popup explains this the first time `setup()` runs after installing
 migrate.nvim, `:Lib deps show migrate.nvim` repeats it any time, and it's
-also folded into `:checkhealth migrate`. Opt out with
-`vim.g.lib_nvim_deps_disable_first_run = true` (every plugin) or
-`vim.g.lib_nvim_deps_disabled_plugins = { "migrate.nvim" }` (just this
-one), set anywhere in your config.
+also folded into `:checkhealth migrate`. Disable it **right in this
+plugin's own spec**: `require("migrate").setup({ deps_popup = false })`.
+`vim.g.lib_nvim_deps_disable_first_run = true` (every plugin) /
+`vim.g.lib_nvim_deps_disabled_plugins = { "migrate.nvim" }` also still
+work, for turning it off without touching any plugin's config.
 
 ---
 
