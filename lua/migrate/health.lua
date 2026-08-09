@@ -109,6 +109,18 @@ function M.check()
   else
     health.warn("migrate.config failed to load: " .. tostring(config))
   end
+
+  ---------------------------------------------------------------------------
+  -- Declared tools (lib.nvim.deps)
+  ---------------------------------------------------------------------------
+  -- migrate.nvim's own docs/install.json — the same rg check above, but
+  -- with its declared `why` and a pointer to `:Lib deps show`. Does
+  -- nothing if lib.nvim.deps is unavailable (older lib.nvim).
+  local ok_deps, deps_health = pcall(require, "lib.nvim.deps.health")
+  if ok_deps then
+    health.start("migrate.nvim: declared tools (lib.nvim.deps)")
+    deps_health.report_for("migrate.nvim")
+  end
 end
 
 return M

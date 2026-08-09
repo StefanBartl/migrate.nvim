@@ -28,6 +28,16 @@ local M = {}
 function M.setup(opts)
   config.setup(opts)
   require("migrate.bindings").setup(config.get())
+
+  -- One-time (persisted across restarts) popup on the first setup() after
+  -- installing this plugin: which CLI tools it wants and why
+  -- (docs/install.json). `:Lib deps show migrate.nvim` thereafter. pcall'd:
+  -- an older lib.nvim without lib.nvim.deps mustn't break setup() over an
+  -- informational popup.
+  local ok_deps, deps = pcall(require, "lib.nvim.deps")
+  if ok_deps then
+    deps.show_once("migrate.nvim")
+  end
 end
 
 ---Enable all registered migration tools (convenience function)
