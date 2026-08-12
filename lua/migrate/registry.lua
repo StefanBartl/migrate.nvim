@@ -9,6 +9,11 @@
 --- and `migrate.init`'s `enable_all()`/`disable_all()` all iterate this
 --- table instead of naming individual modules by hand -- registering here
 --- is the only wiring a new migration module needs.
+---@see migrate.opt
+---@see migrate.notify
+---@see migrate.hl
+---@see migrate.lsp
+---@see migrate.bindings.usrcmds
 
 local M = {}
 

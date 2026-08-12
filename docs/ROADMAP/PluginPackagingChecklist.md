@@ -37,10 +37,12 @@ Copy of the personal master checklist
 
 ## 3. Tests
 
-- [x] `docs/TESTS/**` geschrieben — covers `migrate.opt.migrator` (extracted for
+- [x] `docs/TESTS/**` geschrieben — covers `migrate.opt.migrator`,
+  `migrate.hl.migrator`, `migrate.lsp.migrator` (all extracted for
   testability) and `migrate.notify.parser.*`. `migrate.opt`/`migrate.notify`/
-  `migrate.common.*` hard-require `lib.nvim`/`telescope.nvim` and stay out of
-  the headless suite (documented in `docs/TESTS/README.md`).
+  `migrate.hl`/`migrate.lsp`/`migrate.common.*` hard-require
+  `lib.nvim`/`telescope.nvim` and stay out of the headless suite (documented
+  in `docs/TESTS/README.md`).
 
 ---
 

@@ -10,6 +10,7 @@
 
 ![Neovim](https://img.shields.io/badge/Neovim-0.9+-57A143?logo=neovim&logoColor=white)
 ![Lua](https://img.shields.io/badge/Made%20with-Lua-2C2D72?logo=lua&logoColor=white)
+[![CI](https://github.com/StefanBartl/migrate.nvim/actions/workflows/ci.yml/badge.svg)](https://github.com/StefanBartl/migrate.nvim/actions/workflows/ci.yml)
 
 > 💡 Pairs well with [recommender.nvim](https://github.com/StefanBartl/recommender.nvim):
 > use migrate to clear out deprecated API calls, and recommender to spot the

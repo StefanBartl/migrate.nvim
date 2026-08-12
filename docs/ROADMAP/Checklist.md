@@ -23,15 +23,14 @@ Legende: ✅ · ⚠️ bewusste Abweichung/offen · n/a
 | Testbarkeit (pure functions) | 🟡 | ✅ | `opt.migrator`, `notify.parser.*` sind rein; `docs/TESTS/`-Suite deckt sie ab. |
 | Import-Reihenfolge | 🟢 | ✅ | Kern/Config → Feature-Module → Bindings (z. B. `opt/init.lua`: common.* → opt.migrator → lib.nvim.notify). |
 
-### Bonuspunkt: `lib`-Modul nutzen — ⚠️ (teilweise)
+### Bonuspunkt: `lib`-Modul nutzen — ✅
 
 `lib.nvim.notify` (Kommando-/UI-Schicht) und `lib.nvim.map` (optionale
 Keymaps) werden genutzt — als **harte**, nicht soft, Dependency (siehe
-`health.lua`). **Nicht genutzt:** `lib.nvim.usercmd` — beide User-Commands
-(`:MigrateOpt`, `:MigrateNotify`) registrieren direkt über
-`vim.api.nvim_create_user_command` statt über den `lib.nvim.usercmd`-Wrapper,
-der automatisches `pcall`-Wrapping der Callbacks böte. Echter, aber
-risikoarmer offener Punkt (siehe [Arch&Coding.md](Arch&Coding.md)).
+`health.lua`). `lib.nvim.usercmd.composer` wird seit
+`8d26139` (`refactor(usrcmds): migrate :MigrateOpt/:MigrateNotify to
+lib.nvim.usercmd.composer`) für alle Commands genutzt (`common/command.lua`,
+`notify/init.lua`) — kein rohes `nvim_create_user_command` mehr im Code.
 `lib.cross`/`memo`/`lazy` (Top-Level): migrate.nvim braucht sie nicht (schon
 cross-platform durch Pfadnormalisierung; kein Memoization-Bedarf); `lib.lua.lazy`
 (submodule-lazy-require) wird in `notify/init.lua` tatsächlich genutzt.
@@ -42,9 +41,13 @@ cross-platform durch Pfadnormalisierung; kein Memoization-Bedarf); `lib.lua.lazy
 - pcall/Guards/explizite Rückgaben/kein Low-Level-notify: ✅
 - `safe_call`-Envelope + strukturierte Fehlertypen: ⚠️ bewusst nicht — `(ok, err)`-Tupel/`pcall` reicht für den synchronen Scope.
 
-### 2. Modularität & Struktur — ✅ / ⚠️
+### 2. Modularität & Struktur — ✅
 - SRP ✅, keine Globals ✅, reine Funktionen ✅ (Parser/Migrator), interne Helfer lokal ✅.
-- Tools/Registry: ⚠️ kein zentrales Registry-Pattern — `opt`/`notify` sind namentlich in `bindings/usrcmds.lua` verdrahtet. Für 2 Module kein Mehrwert; vorgemerkt in `docs/ROADMAP.md` falls ein 3. Migrationsmodul dazukommt.
+- Tools/Registry: ✅ `lua/migrate/registry.lua` (seit `b6aa043`) — alle vier
+  Module (`opt`/`notify`/`hl`/`lsp`) sind `M.register()`-Einträge; `config`,
+  `bindings`, `health` und `init.enable_all()`/`disable_all()` iterieren die
+  Registry statt Module namentlich zu verdrahten. Dokumentiert in
+  [`docs/FEATURES.md`](../FEATURES.md#pluggable-migration-registry).
 - `/config`-Ordner mit `DEFAULTS.lua`: ✅ (`config/{init,DEFAULTS}.lua`).
 
 ### 3. Buffer-/Window-Management — ✅ (Fenster n/a)
@@ -54,18 +57,22 @@ cross-platform durch Pfadnormalisierung; kein Memoization-Bedarf); `lib.lua.lazy
 ### 4. UI-State-Management — n/a
 Kein eigener UI-State (Telescope verwaltet Picker-Fenster und -Zustand selbst).
 
-### 5. Dokumentation & Annotationen — ✅ / ⚠️
+### 5. Dokumentation & Annotationen — ✅
 Kopf-Tags ✅, Funktions-Tags ✅, Aliase/Felder in `@types` ✅. `/config`-Eintrag im
-PR-Review-Kapitel selbst schon oben unter Punkt 2 bestätigt. Kein `@see`
-irgendwo im Code (⚠️, niedrige Priorität bei der aktuellen Modulgröße).
+PR-Review-Kapitel selbst schon oben unter Punkt 2 bestätigt. `@see`-Querverweise
+zwischen `registry`/`init`/`config.DEFAULTS`/`common.command` und den vier
+Migrationsmodulen (`opt`/`notify`/`hl`/`lsp`) sowie `bindings.usrcmds`/`health`
+ergänzt.
 
 ### 6. Testbarkeit und Lesbarkeit — ✅
 DI: Config wird als `opts` durchgereicht, kein Hard-Wiring ✅. Pure Functions ✅
 (extra für Testbarkeit aus `opt/init.lua` extrahiert). Test-Entry `docs/TESTS/run.lua` ✅.
 
-### 7. Tooling — ⚠️ (1 offener Punkt)
+### 7. Tooling — ✅
 - Lua LS: `.luarc.json` vorhanden (`diagnostics.globals=vim`, `workspace.library`) ✅.
-- Formatter/Linter im CI: ❌ kein `.github/workflows/ci.yml`/`.luacheckrc` — `stylua` wird manuell ausgeführt, keine CI-Automatisierung. Vorgemerkt in `docs/ROADMAP.md` ("CI").
+- Formatter/Linter im CI: ✅ `.github/workflows/ci.yml` (seit `a1189a4`) läuft
+  `stylua --check`, `luacheck` und den headless `docs/TESTS/run.lua`-Suite auf
+  jedem Push/PR gegen `main`. Badge im README.
 
 ## Coding-Checkliste
 
@@ -81,11 +88,15 @@ Kein globaler State ✅, keine API ohne Guards (bis auf die o. g. Feinheiten) �
 kein String-Concat im Loop ✅, keine Closures im Hot-Loop (kein Hot-Loop
 vorhanden) ✅, keine Flut kleiner Temp-Tabellen ✅.
 
-## Import- & Dateistruktur-Check — ⚠️
-Import-Reihenfolge ✅, Datei-Header ✅. Projektweiter `@types`-Ordner: ⚠️ nur 2
-zentrale Typ-Dateien statt eines `/types`-Ankers pro Subverzeichnis (siehe
-[Arch&Coding.md](Arch&Coding.md) §5) — bewusst vereinfacht bei der aktuellen
-Modulanzahl.
+## Import- & Dateistruktur-Check — ✅ (1 bewusste Abweichung)
+Import-Reihenfolge ✅, Datei-Header ✅. Projektweiter `@types`-Ordner: ⚠️
+bewusste Abweichung — nur 2 zentrale Typ-Dateien (`@types/init.lua`,
+`common/@types.lua`) statt eines `/types`-Ankers pro Subverzeichnis (siehe
+[Arch&Coding.md](Arch&Coding.md) §5). Auch nach dem Zuwachs auf vier
+Migrationsmodule (`opt`/`notify`/`hl`/`lsp`) hat keines eigene, subdir-lokale
+Typen jenseits dessen, was die zwei zentralen Dateien schon abdecken — ein
+`/types`-Ordner pro Subdir wäre reine Formalie ohne zusätzlichen Typinhalt.
+Endgültig als Abweichung übernommen, nicht mehr als offener Punkt geführt.
 
 ## Performance-Spickzettel — ✅ / n/a
 Gebündelte Writes (`batch_write`) ✅; async I/O via `vim.uv` ✅. Weak-Caches,
@@ -103,32 +114,33 @@ simpler Zähler, kein Datenstruktur-Kapitel-relevanter Algorithmus.
 | Bereich | Beobachtung | Empfehlung |
 | --- | --- | --- |
 | Sicherheit | pcall + Guards durchgängig, keine stillen Fehler | keine |
-| Modularität | SRP, keine Globals, funktional; kein Registry (2 Module) | bei 3. Modul: Registry erwägen |
+| Modularität | SRP, keine Globals, funktional; `migrate.registry` für alle 4 Module | keine |
 | Neovim-API | Buffer-Guards + Re-Validierung in async Callbacks | keine |
 | Performance | gebündelte/async Writes, keine Hot-Loops | keine |
-| Doku/Annotation | vollständig, aber kein `@see`, nur 2 `@types`-Dateien | niedrige Prio: bei Wachstum nachziehen |
-| Tests | `docs/TESTS/` Suite grün (2 Specs) | mehr Randfälle (String-Literal-Notify, Multiline-Aliase — siehe `docs/ROADMAP.md`) |
-| Tooling/CI | kein CI-Workflow | `.github/workflows/ci.yml` (stylua/luacheck/headless Tests) nachziehen |
+| Doku/Annotation | `@see`-Querverweise ergänzt; 2 `@types`-Dateien bleiben bewusste Abweichung | keine |
+| Tests | `docs/TESTS/` Suite grün (4 Specs: opt/notify/hl/lsp) | mehr Randfälle weiterhin denkbar (String-Literal-Notify, Multiline-Aliase) |
+| Tooling/CI | `.github/workflows/ci.yml` (stylua/luacheck/headless Tests) | keine |
 | checkhealth-Modul? | ✅ `:checkhealth migrate` (Deps/Config/which-key) | keine |
 
 ---
 
 ## Fazit & Plan
 
-migrate.nvim erfüllt die Master-Checklist in den meisten für ein
-zeilenbasiertes Migrations-Plugin relevanten Punkten. **Offene Punkte**
-(alle niedrige Priorität, in `docs/ROADMAP.md` nachverfolgt):
+migrate.nvim erfüllt die Master-Checklist inzwischen vollständig. Die vier
+ursprünglich offenen Punkte sind alle nachgezogen:
 
-1. **Kein CI-Workflow** (§7 Tooling) — `stylua --check` + `luacheck` +
-   headless `docs/TESTS/run.lua`, analog zu anderen `StefanBartl/*.nvim`-Repos.
-2. **`lib.nvim.usercmd` nicht genutzt** — rohes `nvim_create_user_command`
-   statt des Wrappers mit automatischem Callback-`pcall`.
-3. **Kein Registry-Pattern** für Migrationsmodule (aktuell nur 2: `opt`, `notify`).
-4. **Kein `@see`**, nur 2 zentrale `@types`-Dateien statt Pro-Subdir-Anker.
+1. ~~Kein CI-Workflow~~ → `.github/workflows/ci.yml` (`a1189a4`).
+2. ~~`lib.nvim.usercmd` nicht genutzt~~ → `lib.nvim.usercmd.composer`
+   durchgängig (`8d26139`).
+3. ~~Kein Registry-Pattern~~ → `lua/migrate/registry.lua` (`b6aa043`), inzwischen
+   4 Module (`opt`/`notify`/`hl`/`lsp`).
+4. ~~Kein `@see`~~ → Querverweise ergänzt. Die 2 zentralen `@types`-Dateien
+   (statt Pro-Subdir-Anker) bleiben eine bewusste, dokumentierte Abweichung —
+   siehe Import- & Dateistruktur-Check oben.
 
 **Bewusste Abweichungen (kein Handlungsbedarf):** kein `safe_call`-Envelope,
 funktionaler Stil statt Metatables, README englisch (publiziertes Plugin,
-kein Config-Modul).
+kein Config-Modul), 2 zentrale `@types`-Dateien statt Pro-Subdir-Anker.
 
 ## Literatur und Referenzen
 

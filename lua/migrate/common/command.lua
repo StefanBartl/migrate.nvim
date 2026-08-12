@@ -17,6 +17,10 @@
 --- what that argument is, and any argument beyond the first whitespace-run
 --- token is silently ignored rather than erroring — behavior that predates
 --- this migration and doesn't map onto composer's own positional binding.
+---@see migrate.opt
+---@see migrate.hl
+---@see migrate.lsp
+---@see migrate.registry
 
 require("migrate.common.@types")
 local notify = require("lib.nvim.notify").create("[migrate]")

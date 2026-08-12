@@ -3,6 +3,8 @@
 ---@description
 --- Same shape as `migrate.opt`/`migrate.hl`: line/range/buffer(`%`)/cwd
 --- modes through the shared `migrate.common.command` factory.
+---@see migrate.common.command
+---@see migrate.registry
 
 local command = require("migrate.common.command")
 local picker = require("migrate.common.picker")

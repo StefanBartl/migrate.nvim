@@ -2,6 +2,7 @@
 ---@brief Migrate vim.notify to lib.notify (with alias support)
 ---@description
 --- Enhanced version with auto-write for CWD mode
+---@see migrate.registry
 
 local notify = require("lib.nvim.notify").create("[migrate.notify]")
 local composer = require("lib.nvim.usercmd.composer")
