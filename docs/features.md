@@ -159,3 +159,20 @@ description automatically, with no group/prefix registration performed.
 - **Module:** `lua/migrate/bindings/keymaps.lua`, `lua/migrate/bindings/which_key.lua`
 - **Keymaps:** see [../BINDINGS.md#keymaps](BINDINGS.md#keymaps)
 - **Config:** `opts.keymaps` (default `false`)
+
+## Engineering audit
+
+migrate.nvim was audited against the personal Lua/Neovim plugin checklist
+and three personal architecture/coding checklists. Every item the audit
+raised — a CI workflow, the `lib.nvim.usercmd` wrapper, the migration-module
+registry, `@see` cross-references — has since been implemented; the one
+remaining gap (a `/types` folder per subdirectory instead of two central
+`@types` files) is a documented, deliberate deviation, not an open item.
+
+- **CI:** `.github/workflows/ci.yml` — `stylua --check`, `luacheck`, and the
+  headless `docs/TESTS/` suite on every push/PR to `main`.
+- **Audit trail:** [`ROADMAP/Checklist.md`](ROADMAP/Checklist.md) (master
+  checklist), [`ROADMAP/Arch&Coding.md`](ROADMAP/Arch&Coding.md)
+  (architecture & coding rules), [`ROADMAP/Zentral-Prinzipien.md`](ROADMAP/Zentral-Prinzipien.md)
+  (central module principles), [`ROADMAP/PluginPackagingChecklist.md`](ROADMAP/PluginPackagingChecklist.md)
+  (packaging checklist) — each closed out, kept for reference.
