@@ -22,8 +22,13 @@ value/effort, not binding.
 
 migrate.nvim was audited against the personal Lua/Neovim plugin checklist
 ([ROADMAP/PluginPackagingChecklist.md](ROADMAP/PluginPackagingChecklist.md))
-and the three personal architecture/coding checklists. Results and
-deliberate deviations:
+and the three personal architecture/coding checklists. All items that came
+out of that audit as open (CI workflow, `lib.nvim.usercmd`, a migration-module
+registry, `@see` cross-references) have since been implemented — see each
+checklist's own "Fazit" for what changed and which commit. The only
+remaining item is a documented, deliberate deviation (a shared `@types`
+surface instead of a `/types` folder per subdirectory), not an open task.
+Audit docs, kept for reference:
 
 - [ROADMAP/Arch&Coding.md](ROADMAP/Arch&Coding.md) — architecture & coding rules
 - [ROADMAP/Zentral-Prinzipien.md](ROADMAP/Zentral-Prinzipien.md) — central module principles

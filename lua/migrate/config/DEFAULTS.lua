@@ -8,6 +8,7 @@
 --- here (default `true`) -- see that module for the per-key description
 --- (e.g. what `opt`/`notify`/`hl`/`lsp` each migrate) instead of duplicating
 --- it in comments here, which would drift as modules are added.
+---@see migrate.registry
 
 local registry = require("migrate.registry")
 

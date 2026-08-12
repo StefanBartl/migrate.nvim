@@ -17,6 +17,8 @@
 --- Every enabled module comes from `migrate.registry` -- see that module for
 --- the full list (`opt`, `notify`, `hl`, `lsp`, and any third-party module
 --- registered before `setup()` runs).
+---@see migrate.registry
+---@see migrate.config
 
 local config = require("migrate.config")
 local registry = require("migrate.registry")

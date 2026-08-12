@@ -7,7 +7,7 @@
 
 Legende: ✅ erfüllt · ⚠️ bewusste Abweichung · ❌ offen · n/a nicht zutreffend
 
-## §1 Sicherheitsprinzipien & Fehlerbehandlung — ✅ (2 offene Punkte)
+## §1 Sicherheitsprinzipien & Fehlerbehandlung — ✅
 
 | Regel | Status | Beleg / Anmerkung |
 | --- | --- | --- |
@@ -29,7 +29,7 @@ Legende: ✅ erfüllt · ⚠️ bewusste Abweichung · ❌ offen · n/a nicht zu
 | Reine Funktionen bevorzugen | ✅ | `opt.migrator.migrate_line`, `notify.parser.patterns.*`, `notify.parser.migrator.*`, `notify.parser.extractor.*` sind seiteneffektfrei (siehe `docs/TESTS/`). |
 | Lokale statt globale Funktionen | ✅ | Keine globalen Funktionen; interne Helfer sind `local`. |
 | Entwurfsmuster wenn sinnvoll | ✅ | „Strategy"-artige Trennung Scan/Apply/Picker über `MigrateCommon.CommandOpts` (`common/command.lua`); Facade in `init.lua`. |
-| Tools via Registry | ❌ | Kein zentrales Registry-Pattern — `opt`/`notify` sind namentlich in `bindings/usrcmds.lua` verdrahtet. Für 2 Module ohne spürbaren Mehrwert; bei einem 3. Migrationsmodul lohnt sich ein `migrate.registry`. Vorgemerkt in `docs/ROADMAP.md` ("Pluggable migration modules"). |
+| Tools via Registry | ✅ | `lua/migrate/registry.lua` — `opt`/`notify`/`hl`/`lsp` sind `M.register()`-Einträge; `config`, `bindings`, `health`, `init.enable_all()`/`disable_all()` iterieren die Registry statt Module namentlich zu verdrahten. Siehe [`docs/FEATURES.md`](../FEATURES.md#pluggable-migration-registry). |
 | Keine globalen States | ✅ | Einziger State ist `migrate.config.options` (Singleton-Table), Zugriff nur über `config.get()`. |
 
 ## §3 Buffer- & Window-Management — ✅ (Fenster n/a)
@@ -42,7 +42,7 @@ Legende: ✅ erfüllt · ⚠️ bewusste Abweichung · ❌ offen · n/a nicht zu
 
 migrate.nvim ist **funktional**, nicht OO: keine Metatables, kein `__index`, keine Getter/Setter-Objekte (`migrate.config.get()` ist die einzige Ausnahme und ein einfacher Funktionsaufruf, kein OO-Objekt). Für ein zustandsarmes Migrations-Tool die einfachere, testbarere Wahl. Kein Handlungsbedarf.
 
-## §5 Dokumentation & Annotationen — ✅ (2 offene/bewusste Punkte)
+## §5 Dokumentation & Annotationen — ✅ (1 bewusste Abweichung)
 
 | Regel | Status | Beleg / Anmerkung |
 | --- | --- | --- |
@@ -50,8 +50,8 @@ migrate.nvim ist **funktional**, nicht OO: keine Metatables, kein `__index`, kei
 | Kommentare pro Funktion `@param/@return` | ✅ | Durchgängig. |
 | Konsistentes englisches Naming | ✅ | snake_case, englisch. |
 | Explizite Typisierungen `@alias/@field` | ✅ | `@types/init.lua` (`UsrCmds.Migrate.Config`, `UsrCmds.Migrate.Keymaps`, `.Notify.Match`) + `common/@types.lua` (`MigrateCommon.*`). |
-| Modulverlinkung `@see` | ❌ | Kein einziges `@see` im Code. Niedrige Priorität — die Modul-Struktur ist klein genug, dass Cross-Referenzen bisher nicht vermisst wurden. |
-| **`/types`-Ordner pro Subverzeichnis** | ⚠️ | Nur 2 Typ-Dateien insgesamt (`@types/init.lua` top-level, `common/@types.lua`) statt eines `/types`-Ankers pro Unterverzeichnis (`opt/`, `notify/`, `notify/parser/`, `notify/refactor/`, `bindings/`, `config/` haben keinen eigenen `/types`-Ordner). Bewusst vereinfacht — deutlich weniger Module als z. B. cascade.nvim, zwei zentrale Dateien decken alles ab. Bei weiterem Wachstum (§2: neues Migrationsmodul) nachziehen. |
+| Modulverlinkung `@see` | ✅ | `registry.lua` ↔ die vier Migrationsmodule + `bindings.usrcmds`; `init.lua`/`config/DEFAULTS.lua` → `registry`; jedes Migrationsmodul (`opt`/`notify`/`hl`/`lsp`) → `common.command` + `registry`; `bindings.usrcmds`/`health.lua` → `registry`. |
+| **`/types`-Ordner pro Subverzeichnis** | ⚠️ | Bewusste Abweichung, jetzt final: nur 2 Typ-Dateien insgesamt (`@types/init.lua` top-level, `common/@types.lua`) statt eines `/types`-Ankers pro Unterverzeichnis. Auch nach dem Zuwachs von 2 auf 4 Migrationsmodule (`hl`, `lsp` kamen dazu) hat kein Subdir eigene, lokale Typen jenseits dessen, was die zwei zentralen Dateien abdecken — ein Ordner pro Subdir wäre reine Formalie ohne zusätzlichen Typinhalt. Nicht mehr als offener Punkt geführt. |
 | **README deutsch + `doc/*.txt` englisch** | ⚠️ | Diese Regel gilt für **`nvim/config`-Module**. migrate.nvim ist ein **veröffentlichtes Standalone-Plugin** → README **englisch** (wie bei allen `StefanBartl/*.nvim`-Repos). Bewusst abweichend. |
 
 ## §6 Testbarkeit & Lesbarkeit — ✅
@@ -87,13 +87,13 @@ Kein persistenter Cache, keine Dual-Representation, keine FIFO/History-Strukture
 - Requires folgen der vorgegebenen Reihung (Kern/Config → Feature-Module → Bindings), z. B. `opt/init.lua`: `common.command` → `common.picker` → `common.buffer` → `opt.migrator` → `lib.nvim.notify`.
 - Lokale Aliase für heiße Pfade: nicht nötig (kein Hot-Loop über viele Iterationen; Migrationen laufen auf explizite Kommandos, nicht pro Tastendruck).
 
-## NVIM-Config-spezifisch — ⚠️ (1 offener Punkt)
+## NVIM-Config-spezifisch — ✅
 
 | Punkt | Status | Anmerkung |
 | --- | --- | --- |
 | `lib.nvim.notify` statt `vim.notify()` | ✅ | Durchgängig in der Kommando-/UI-Schicht. Ausnahme: `bindings/usrcmds.lua`'s Modul-Lade-Fehler nutzt rohes `vim.notify` — bewusst, da an dieser Stelle noch unklar ist, ob `lib.nvim` überhaupt geladen werden konnte. |
 | `lib.nvim.map` statt `vim.keymap.set` | ✅ | `bindings/keymaps.lua` nutzt `lib.nvim.map`. |
-| `lib.nvim.usercmd` statt `nvim_create_user_command` | ❌ | `common/command.lua` und `notify/init.lua` registrieren Commands direkt über `vim.api.nvim_create_user_command`, nicht über `lib.nvim.usercmd` (das u. a. automatisches `pcall`-Wrapping der Callback-Funktion böte). Offener Punkt, siehe Fazit. |
+| `lib.nvim.usercmd` statt `nvim_create_user_command` | ✅ | `common/command.lua` und `notify/init.lua` registrieren Commands über `lib.nvim.usercmd.composer` (seit `8d26139`); kein rohes `nvim_create_user_command` mehr im Code. |
 | `lib.*augroup`/`lib.*autocmd` | n/a | migrate.nvim registriert keine Autocmds (siehe `docs/BINDINGS.md`). |
 | `lib.cross`/`lib.memo`/`lib.lazy`/`lib.hover_select` | n/a | Kein Cross-Platform-Sonderfall über das bereits Vorhandene hinaus (siehe Cross-Plattform-Review in `docs/ROADMAP/PluginPackagingChecklist.md`); kein Memoization-Bedarf; kein `vim.select`-Einsatz. |
 
@@ -101,11 +101,12 @@ Kein persistenter Cache, keine Dual-Representation, keine FIFO/History-Strukture
 
 ## Fazit & Plan
 
-migrate.nvim folgt den Regeln überwiegend. **Offene, niedrigpriore Punkte:**
+migrate.nvim folgt den Regeln jetzt vollständig. Die vier ursprünglich
+offenen Punkte sind nachgezogen:
 
-1. **`lib.nvim.usercmd` statt rohem `nvim_create_user_command`** (NVIM-Config-spezifisch) — würde automatisches Error-Wrapping der Callbacks bringen; echter, aber risikoarmer Nacharbeits-Punkt (kein Verhaltensunterschied für den User, nur robustere Fehlerbehandlung bei Bugs im Callback selbst).
-2. **Kein Tools-Registry-Pattern** (§2) — bei einem 3. Migrationsmodul sinnvoll, für aktuell 2 (`opt`, `notify`) kein Mehrwert.
-3. **Kein `@see`** (§5) — bei der aktuellen Modulgröße nicht vermisst.
-4. **Kein `/types`-Anker pro Subverzeichnis** (§5) — bewusst vereinfacht auf 2 zentrale Typ-Dateien.
+1. ~~`lib.nvim.usercmd` statt rohem `nvim_create_user_command`~~ (NVIM-Config-spezifisch) → `lib.nvim.usercmd.composer` durchgängig.
+2. ~~Kein Tools-Registry-Pattern~~ (§2) → `lua/migrate/registry.lua`, jetzt 4 Module.
+3. ~~Kein `@see`~~ (§5) → Querverweise ergänzt.
+4. **Kein `/types`-Anker pro Subverzeichnis** (§5) — bleibt eine bewusste Abweichung (siehe §5-Tabelle), kein offener Punkt mehr.
 
-**Bewusste Abweichungen (kein Handlungsbedarf):** kein `safe_call`-Envelope (§1/§7), funktionaler Stil statt Metatables (§4), README englisch (§5, publiziertes Plugin).
+**Bewusste Abweichungen (kein Handlungsbedarf):** kein `safe_call`-Envelope (§1/§7), funktionaler Stil statt Metatables (§4), README englisch (§5, publiziertes Plugin), 2 zentrale `@types`-Dateien statt Pro-Subdir-Anker (§5).

@@ -10,8 +10,8 @@ Legende: ✅ erfüllt · ⚠️ teilweise / bewusst abgewogen · ❌ offen
 Anders als bei einem rein optionalen (soft-dependency) Plugin ist `lib.nvim`
 für migrate.nvim eine **harte** Abhängigkeit (siehe `health.lua`: "lib.nvim
 not found (required)"). `lib.nvim.notify` wird durchgängig in der
-Kommando-/UI-Schicht genutzt, `lib.nvim.map` in den optionalen Keymaps.
-`lib.nvim.usercmd` wird **nicht** genutzt (offener Punkt, siehe
+Kommando-/UI-Schicht genutzt, `lib.nvim.map` in den optionalen Keymaps,
+`lib.nvim.usercmd.composer` für sämtliche Commands (siehe
 [Arch&Coding.md](Arch&Coding.md)). `lib.cross`/`memo`/`lazy`/`hover_select`
 sind n/a bzw. durch eigene, einfachere Lösungen abgedeckt (siehe unten).
 
@@ -81,17 +81,16 @@ migrate.nvim hat **keinen Hot-Path**: nichts läuft bei `CursorMoved`,
 passiert nur bei explizitem Kommando-Aufruf. Tabellen-Allokationen pro Scan
 sind hier unproblematisch.
 
-## 9. Debugbarkeit eingeplant? — ⚠️ (1 offener Punkt)
+## 9. Debugbarkeit eingeplant? — ✅
 
 - `:checkhealth migrate` zeigt Modul-/Dependency-/Config-Status inkl.
   which-key-Erkennung.
 - Die Testsuite (`docs/TESTS/`) erlaubt isoliertes Testen der reinen
   Parser-/Migrator-Funktionen.
-- **Kein dedizierter Debug-Schalter/Log** (z. B. `migrate.debug = true` +
-  `lib.nvim.notify`-basiertes Tracing der Scan-/Apply-Schritte). Niedrige
-  Priorität — der Kontrollfluss (scan → [picker] → apply → [write]) ist
-  bereits ohne zusätzliches Logging nachvollziehbar; würde aber bei Bug-
-  Reports zu Falsch-Migrationen helfen.
+- **Dedizierter Debug-Schalter** — `setup({ debug = true })` +
+  `lua/migrate/common/debug.lua` tracen den scan → picker → apply → write
+  Pfad über `lib.nvim.notify`'s `.debug()`-Level (siehe
+  [`docs/FEATURES.md`](../FEATURES.md#debug-tracing)).
 
 ## 10. Laufzeit wichtiger als Startup? — ✅
 
@@ -102,14 +101,9 @@ tut buchstäblich nichts, bis ein Kommando aufgerufen wird.
 
 ## Fazit
 
-migrate.nvim erfüllt die zentralen Prinzipien fast vollständig — die
+migrate.nvim erfüllt die zentralen Prinzipien vollständig — die
 Kommando-getriebene, Event-freie Architektur entspricht dem Idealbild der
 Checkliste besonders gut (Punkte 1, 4, 5, 8, 10 sind praktisch geschenkt,
-weil es keine Autocmds/Hot-Paths gibt). Ein einziger niedrigpriorer,
-offener Punkt:
-
-1. **Kein Debug-Schalter** (Prinzip 9) — optionales `debug`-Flag mit
-   `lib.nvim.notify`-Tracing der Scan-/Match-/Apply-Schritte, falls bei
-   Falsch-Migrationen künftig genauere Diagnose gebraucht wird.
-
-Vorgemerkt in [ROADMAP.md](../ROADMAP.md), nicht kritisch.
+weil es keine Autocmds/Hot-Paths gibt). Der einzige zuvor offene Punkt, der
+Debug-Schalter (Prinzip 9), ist mit `setup({ debug = true })` +
+`lua/migrate/common/debug.lua` umgesetzt. Keine offenen Punkte mehr.

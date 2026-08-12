@@ -6,6 +6,7 @@
 --- command; this module only decides *which* of them get enabled for a
 --- given config, driven entirely by `migrate.registry` -- adding a module
 --- here is just registering it there.
+---@see migrate.registry
 
 local notify = require("lib.nvim.notify").create("[migrate.bindings.usrcmds]")
 local registry = require("migrate.registry")

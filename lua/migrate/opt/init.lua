@@ -3,6 +3,8 @@
 ---@description
 --- Refactored to use common migration infrastructure.
 --- Supports: line, range, buffer (%), cwd modes.
+---@see migrate.common.command
+---@see migrate.registry
 
 local command = require("migrate.common.command")
 local picker = require("migrate.common.picker")

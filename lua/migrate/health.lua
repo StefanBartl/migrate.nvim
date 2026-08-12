@@ -5,6 +5,7 @@
 --- required runtime dependencies (lib.nvim, telescope.nvim) are present, that
 --- the optional `ripgrep` binary (used for cwd-wide scans) is available, and
 --- reports the active configuration (incl. optional keymaps/which-key).
+---@see migrate.registry
 
 local M = {}
 
