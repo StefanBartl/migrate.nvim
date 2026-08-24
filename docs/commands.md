@@ -25,6 +25,10 @@ require("migrate").setup() -- opt + notify + hl + lsp all enabled by default
 :MigrateHl cwd
 :MigrateLsp cwd
 
+" Preview without applying (line and range modes):
+:MigrateOpt --dry-run
+:'<,'>MigrateOpt -n
+
 " Explicit range:
 :'<,'>MigrateOpt
 :'<,'>MigrateNotify
@@ -52,6 +56,7 @@ and `:MigrateLsp` share the same argument grammar (registered via the
 |---|---|---|
 | `:MigrateOpt` / `:MigrateNotify` / `:MigrateHl` / `:MigrateLsp` | *(none)* | Migrate the current line, applied immediately |
 | `:'<,'>MigrateOpt` / `:'<,'>MigrateNotify` / `:'<,'>MigrateHl` / `:'<,'>MigrateLsp` | *(range)* | Migrate the given range, applied immediately |
+| any of the above | `-n` / `--dry-run` | Report what would change; apply nothing |
 | `:MigrateOpt %` / `:MigrateNotify %` / `:MigrateHl %` / `:MigrateLsp %` | `%` | Scan the whole buffer, open Telescope picker |
 | `:MigrateOpt cwd` / `:MigrateNotify cwd` / `:MigrateHl cwd` / `:MigrateLsp cwd` | `cwd` | Scan the working directory via ripgrep, open Telescope picker |
 

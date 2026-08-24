@@ -26,7 +26,18 @@ require("migrate").setup({
 | `keymaps.opt` | n | `keymaps.opt` | `:MigrateOpt` (current line) | migrate: run :MigrateOpt (current line) |
 | `keymaps.notify` | n | `keymaps.notify` | `:MigrateNotify` (current line) | migrate: run :MigrateNotify (current line) |
 | `keymaps.hl` | n | `keymaps.hl` | `:MigrateHl` (current line) | migrate: run :MigrateHl (current line) |
-| `keymaps.lsp` | n | `keymaps.lsp` | `:MigrateLsp` (current line) | migrate: run :MigrateLsp (current line) |
+| `keymaps.lsp` | n | `keymaps.lsp` | `:MigrateLsp` (current line, or N with a count) | migrate: run :MigrateLsp (current line, or N with a count) |
+
+**A count migrates that many lines.** `3<leader>mo` runs the command over the
+cursor line and the two below it, clamped to the end of the buffer. It is
+issued as an explicit `:{line1},{line2}` range — the same range mode a Visual
+selection produces, so it applies directly with no picker, exactly like the
+single-line case it generalizes.
+
+The commands were range-capable all along; nothing was passing them a range
+from a keymap. A count is spelled as a range rather than left to Vim's own
+count-to-address translation, because `:3MigrateOpt` would mean "line 3", not
+"three lines from here".
 
 There is no fixed prefix — each `lhs` is an arbitrary string the user
 chooses. which-key (if installed) picks up the `desc` above automatically;

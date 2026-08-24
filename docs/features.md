@@ -108,6 +108,23 @@ apply immediately and never open the picker.
 - **Module:** `lua/migrate/common/picker.lua` (`M.show`)
 - **Keymaps:** picker keys — see [../BINDINGS.md#picker-keys](BINDINGS.md#picker-keys)
 
+## Dry run (`-n` / `--dry-run`)
+
+Reports every migration that *would* be made, with the real before/after text
+from each match, and applies nothing.
+
+Only the line and range modes needed it: `%` and `cwd` already go through the
+picker, which is a preview with an apply step. Line and range apply
+immediately, which is exactly where "show me first" was missing. The flag is
+accepted in all four modes anyway rather than rejected in two, so a mapping
+can pass it unconditionally.
+
+Added 2026-08-24, closing the flag/option audit's entry about there being no
+dry run for the single-line case.
+
+- **Module:** `lua/migrate/common/command.lua` (`report_dry_run`, `dispatch`)
+- **Usercmds:** `-n` / `--dry-run` on every `:Migrate*` command
+
 ## Pluggable migration registry
 
 `migrate.opt`/`notify`/`hl`/`lsp` are not special-cased anywhere outside
@@ -152,7 +169,18 @@ notify call happens on the hot path.
 
 Off by default; `setup({ keymaps = { opt = "<leader>mo", notify = "<leader>mn", hl = "<leader>mh", lsp = "<leader>ml" } })`
 binds each configured `lhs` to that module's command in current-line
-mode. There is no fixed prefix — each `lhs` is whatever string the user
+mode.
+
+**A count migrates that many lines** (added 2026-08-24, closing the
+count-support audit's entry): `3<leader>mo` covers the cursor line and the two
+below it, clamped to the end of the buffer. It is issued as an explicit
+`:{line1},{line2}` range, so it takes the same immediate-apply path a Visual
+selection does. The commands were range-capable all along — nothing was
+passing them a range from a keymap. Spelling the count as a range rather than
+relying on Vim's count-to-address translation matters: `:3MigrateOpt` means
+"line 3", not "three lines from here".
+
+There is no fixed prefix — each `lhs` is whatever string the user
 chooses — and which-key (if installed) picks up each mapping's
 description automatically, with no group/prefix registration performed.
 

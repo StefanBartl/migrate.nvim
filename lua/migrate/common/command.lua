@@ -45,13 +45,40 @@ composer.register_type("MIGRATE_SCOPE", {
 })
 
 ---@internal
+--- Report what a migration *would* do, without touching the buffer.
+---
+--- Only the line and range modes need this: `%` and `cwd` already go through
+--- a picker, which is a preview with an apply step. Line and range apply
+--- straight away, which is exactly where "show me first" was missing.
+---
+--- Each match carries both `text` and `migrated`, so the report is the real
+--- before/after rather than a description of one.
+---@param opts MigrateCommon.CommandOpts
+---@param matches MigrateCommon.Match[]
+---@param what string  # e.g. "on line 12" / "in range"
+---@return nil
+local function report_dry_run(opts, matches, what)
+  local lines =
+    { str_fmt("%s — %d migration(s) %s, nothing applied:", opts.name, #matches, what) }
+  for _, m in ipairs(matches) do
+    lines[#lines + 1] = str_fmt("  %d: %s", m.lnum, vim.trim(m.text or ""))
+    lines[#lines + 1] =
+      str_fmt("  %s  %s", (" "):rep(#tostring(m.lnum)), vim.trim(m.migrated or ""))
+  end
+  notify.info(table.concat(lines, "\n"))
+end
+
+---@internal
 --- Run one migration invocation. `cmd_opts` is composer's `ctx.raw` (same
 --- shape as the original nvim user-command callback opts).
 ---@param opts MigrateCommon.CommandOpts
 ---@param cmd_opts table
+---@param arg string|nil  # the parsed scope positional (`%`/`cwd`), never the
+---       raw argument string: that still carries any flags, so re-parsing it
+---       here made `--dry-run` look like an invalid scope.
+---@param dry_run boolean|nil  # report instead of applying (line/range modes)
 ---@return nil
-local function dispatch(opts, cmd_opts)
-  local arg = cmd_opts.args:match("%S+")
+local function dispatch(opts, cmd_opts, arg, dry_run)
   local bufnr = api.nvim_get_current_buf()
 
   -- Handle range mode (visual or explicit range)
@@ -61,6 +88,11 @@ local function dispatch(opts, cmd_opts)
 
     if #matches == 0 then
       notify.warn("No matches in range")
+      return
+    end
+
+    if dry_run then
+      report_dry_run(opts, matches, "in range")
       return
     end
 
@@ -81,6 +113,11 @@ local function dispatch(opts, cmd_opts)
 
     if #matches == 0 then
       notify.warn("No matches on current line")
+      return
+    end
+
+    if dry_run then
+      report_dry_run(opts, matches, str_fmt("on line %d", cursor[1]))
       return
     end
 
@@ -122,16 +159,22 @@ end
 ---@param opts MigrateCommon.CommandOpts
 function M.register(opts)
   composer.verb(opts.name, {
-    desc = str_fmt("Migration tool: %s", opts.name),
+    desc = str_fmt("Migration tool: %s  [%%|cwd] [-n|--dry-run]", opts.name),
     range = true,
     routes = {
       {
         path = {},
         args = { { name = "mode", type = "MIGRATE_SCOPE", optional = true } },
+        flags = {
+          -- Only meaningful for the line and range modes; `%`/`cwd` already
+          -- preview through their picker. Accepted there too rather than
+          -- rejected, so a mapping can pass it unconditionally.
+          { name = "dry-run", short = "n", bool = true },
+        },
         range = true,
         desc = str_fmt("Migration tool: %s", opts.name),
         run = function(ctx)
-          dispatch(opts, ctx.raw)
+          dispatch(opts, ctx.raw, ctx.args.mode, ctx.flags["dry-run"])
         end,
       },
     },
