@@ -1,10 +1,16 @@
 # Lua/Neovim Master-Checklist — Audit für migrate.nvim
 
-> Anwendung der [Checklist](file:///E:/repos/Notes/MyNotes/Checklists/Lua/Checklist.md)
+> Anwendung der [`regeln/`](../../../WKDBooks/Development/wkdbook-Lua/Checklists/regeln/)
 > auf migrate.nvim. Die umfangreichen Kapitel zu **Sortier-/Such-Algorithmen,
 > Datenstrukturen (Bäume/Heaps/Filter/Tries) und Bit-Operationen** sind für ein
 > zeilenbasiertes Migrations-Plugin **n/a** (siehe Ende). Fokus hier:
 > Schnell-Check, PR-Review, Coding-Checkliste, Anti-Patterns, Struktur.
+
+> The source checklists (`Arch&Coding-Regeln.md`, `Checklist.md`,
+> `Zentrale-Prinzipien.md`) were retired: they were absorbed into the rule
+> collection under `WKDBooks/Development/wkdbook-Lua/Checklists/`, which is
+> now the canonical one. The links above point there.
+
 
 Legende: ✅ · ⚠️ bewusste Abweichung/offen · n/a
 
@@ -145,4 +151,4 @@ kein Config-Modul), 2 zentrale `@types`-Dateien statt Pro-Subdir-Anker.
 ## Literatur und Referenzen
 
 - [Arch&Coding.md](./Arch&Coding.md) · [Zentral-Prinzipien.md](./Zentral-Prinzipien.md) · [NEOTREE_FEATURES.md](./NEOTREE_FEATURES.md)
-- Quell-Checklisten: `E:/repos/Notes/MyNotes/Checklists/Lua/`
+- Quell-Checklisten: `../../../WKDBooks/Development/wkdbook-Lua/Checklists/`

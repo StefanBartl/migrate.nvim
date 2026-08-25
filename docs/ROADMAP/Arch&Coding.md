@@ -1,9 +1,15 @@
 # Architektur- & Coding-Regeln — Audit für migrate.nvim
 
-> Anwendung der Checkliste [Arch&Coding-Regeln](file:///E:/repos/Notes/MyNotes/Checklists/Lua/Arch&Coding-Regeln.md)
+> Anwendung der Checkliste [`regeln/PRINCIPLES.md`](../../../WKDBooks/Development/wkdbook-Lua/Checklists/regeln/PRINCIPLES.md)
 > auf migrate.nvim. Nur die **normativen** Abschnitte (§1–11 + Annotationen/
 > Naming/Types) sind hier auditiert; die CPU-/Table-/String-Benchmark-Kapitel
 > sind Referenzmaterial ohne Einzel-Check.
+
+> The source checklists (`Arch&Coding-Regeln.md`, `Checklist.md`,
+> `Zentrale-Prinzipien.md`) were retired: they were absorbed into the rule
+> collection under `WKDBooks/Development/wkdbook-Lua/Checklists/`, which is
+> now the canonical one. The links above point there.
+
 
 Legende: ✅ erfüllt · ⚠️ bewusste Abweichung · ❌ offen · n/a nicht zutreffend
 

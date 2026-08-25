@@ -1,7 +1,13 @@
 # Zentrale Prinzipien — Audit für migrate.nvim
 
-> Anwendung der Checkliste [Zentrale-Prinzipien](file:///E:/repos/Notes/MyNotes/Checklists/Lua/Zentrale-Prinzipien.md)
+> Anwendung der Checkliste [`regeln/PRINCIPLES.md`](../../../WKDBooks/Development/wkdbook-Lua/Checklists/regeln/PRINCIPLES.md)
 > auf migrate.nvim. Pro Prinzip: Status + Belege im Code.
+
+> The source checklists (`Arch&Coding-Regeln.md`, `Checklist.md`,
+> `Zentrale-Prinzipien.md`) were retired: they were absorbed into the rule
+> collection under `WKDBooks/Development/wkdbook-Lua/Checklists/`, which is
+> now the canonical one. The links above point there.
+
 
 Legende: ✅ erfüllt · ⚠️ teilweise / bewusst abgewogen · ❌ offen
 
