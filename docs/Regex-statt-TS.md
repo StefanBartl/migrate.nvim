@@ -1,80 +1,80 @@
-# Migration Fix Dokumentation
+# Migration fix documentation
 
 ## Table of content
 
-  - [Das Problem](#das-problem)
-  - [Die Lösung](#die-lsung)
-    - [1. Regex statt Treesitter](#1-regex-statt-treesitter)
+  - [The problem](#the-problem)
+  - [The solution](#the-solution)
+    - [1. Regex instead of treesitter](#1-regex-instead-of-treesitter)
     - [2. Whole-Line Replacement](#2-whole-line-replacement)
     - [3. Descending Order Application](#3-descending-order-application)
     - [4. Import Offset Compensation](#4-import-offset-compensation)
     - [5. Exclusion Pattern](#5-exclusion-pattern)
-  - [Kernprinzipien](#kernprinzipien)
-  - [Ausschlaggebend bei der letzten Änderung](#ausschlaggebend-bei-der-letzten-nderung)
-  - [Verwendung](#verwendung)
-    - [Basis-Syntax](#basis-syntax)
-    - [Mit .create() Import](#mit-create-import)
+  - [Core principles](#core-principles)
+  - [What decided the last change](#what-decided-the-last-change)
+  - [Usage](#usage)
+    - [Base syntax](#base-syntax)
+    - [With a .create() import](#with-a-create-import)
 
 ---
 
-## Das Problem
+## The problem
 
-Die ursprüngliche Treesitter-basierte Implementation hatte mehrere kritische Fehler:
+The original treesitter-based implementation had several critical faults:
 
-1. **Self-Migration**: Das Modul hat sich selbst gescannt und dabei eigene `vim.notify` Aufrufe kaputt gemacht
-2. **Offset-Korruption**: Bei mehrfachen Replacements wurden die Zeilen-Indizes inkorrekt berechnet
-3. **Komplexe String-Offset-Berechnung**: Treesitter liefert byte-offsets, die mit Lua's 1-based String-Indexierung kollidierten
+1. **Self-migration**: the module scanned itself and broke its own `vim.notify` calls in the process
+2. **Offset corruption**: with multiple replacements the line indices were computed incorrectly
+3. **Complex string offset arithmetic**: treesitter delivers byte offsets, which collided with Lua's 1-based string indexing
 
-## Die Lösung
+## The solution
 
-### 1. Regex statt Treesitter
+### 1. Regex instead of treesitter
 
-**Warum**: Treesitter gibt exclusive `end_col` Werte zurück, die mit Lua's String-Slicing (1-based) schwer zu kombinieren sind.
+**Why**: treesitter returns exclusive `end_col` values, which are hard to combine with Lua's (1-based) string slicing.
 
-**Wie**: Zurück zu einfachen Lua-Patterns wie in der working monofile:
-- Pattern-Matching für `vim.notify(...)`
-- Klammern-Zählung für multiline detection
-- Komplette Zeilen-Ersetzung statt Teil-String-Manipulation
+**How**: back to simple Lua patterns, as in the working monofile:
+- pattern matching for `vim.notify(...)`
+- bracket counting for multiline detection
+- replacing complete lines instead of manipulating substrings
 
 ### 2. Whole-Line Replacement
 
-**Warum**: Partial String-Replacements führten zu Offset-Fehlern bei mehrfachen Matches.
+**Why**: partial string replacements led to offset errors on multiple matches.
 
-**Wie**:
+**How**:
 ```lua
--- Ersetze komplette Zeilen-Range auf einmal
+-- replace the complete line range in one go
 api.nvim_buf_set_lines(bufnr, start_idx, end_idx, false, { replacement })
 ```
 
-**Kritisch**: Die Index-Konvertierung:
-- Parser liefert **1-based** line numbers (wie Vim)
-- `nvim_buf_set_lines` erwartet **0-based** indices mit **exclusive end**
+**Critical**: the index conversion:
+- the parser delivers **1-based** line numbers (like Vim)
+- `nvim_buf_set_lines` expects **0-based** indices with an **exclusive end**
 
 ```lua
--- Beispiel: Ersetze Zeilen 5-7 (1-based, inclusive)
+-- example: replace lines 5-7 (1-based, inclusive)
 local start_idx = 5 - 1  -- = 4 (0-based start)
 local end_idx = 7        -- = 7 (0-based exclusive end)
--- Ersetzt Buffer-Zeilen [4,5,6] = Vim-Zeilen [5,6,7]
+-- replaces buffer lines [4,5,6] = Vim lines [5,6,7]
 ```
 
 ### 3. Descending Order Application
 
-**Warum**: Wenn man von oben nach unten ersetzt, verschieben sich alle folgenden Zeilen-Nummern.
+**Why**: replacing from the top down shifts all the following line numbers.
 
-**Wie**: Sortiere Matches absteigend nach `end_line`:
+**How**: sort the matches descending by `end_line`:
 ```lua
 table.sort(matches, function(a, b)
   return a.extra.end_line > b.extra.end_line
 end)
 ```
 
-So bleiben alle noch nicht verarbeiteten Matches gültig.
+That way every match not yet processed stays valid.
 
 ### 4. Import Offset Compensation
 
-**Warum**: Wenn `local notify = require("lib.notify")` an Zeile 1 eingefügt wird, verschieben sich alle Zeilen um +2.
+**Why**: when `local notify = require("lib.notify")` is inserted at line 1, all lines shift by +2.
 
-**Wie**: Nach Import-Injection alle Match-Zeilen adjustieren:
+**How**: adjust every match line after the import injection:
 ```lua
 if import_added then
   for _, match in ipairs(matches) do
@@ -86,9 +86,9 @@ end
 
 ### 5. Exclusion Pattern
 
-**Warum**: Das Modul hat sich selbst gescannt und dabei `vim.notify` Aufrufe in `init.lua` und `picker.lua` migriert.
+**Why**: the module scanned itself and migrated `vim.notify` calls in `init.lua` and `picker.lua` in the process.
 
-**Wie**: Überspringe alle Files mit `/usrcmds/migrate/` im Pfad:
+**How**: skip every file with `/usrcmds/migrate/` in its path:
 ```lua
 local function should_exclude(filepath)
   local normalized = filepath:gsub("\\", "/")
@@ -96,68 +96,68 @@ local function should_exclude(filepath)
 end
 ```
 
-## Kernprinzipien
+## Core principles
 
-1. **Einfachheit über Cleverness**: Regex ist einfacher zu debuggen als Treesitter
-2. **Komplette Units ersetzen**: Keine Teil-String-Operationen
-3. **Descending Order**: Von unten nach oben arbeiten
-4. **Offset-Awareness**: Import-Injection verschiebt Zeilen
+1. **Simplicity over cleverness**: regex is easier to debug than treesitter
+2. **Replace complete units**: no substring operations
+3. **Descending order**: work from the bottom up
+4. **Offset awareness**: an import injection shifts lines
 
-## Ausschlaggebend bei der letzten Änderung
+## What decided the last change
 
-Der finale Fix war die **korrekte Index-Konvertierung** in `refactor.lua`:
+The final fix was the **correct index conversion** in `refactor.lua`:
 
 ```lua
--- VORHER (falsch):
+-- BEFORE (wrong):
 local start_line = match.line - 1
-local end_line = match.end_line  -- Unklar ob inclusive/exclusive
+local end_line = match.end_line  -- unclear whether inclusive/exclusive
 
--- NACHHER (richtig):
+-- AFTER (right):
 local start_idx = match.line - 1     -- 1-based -> 0-based
 local end_idx = match.end_line       -- 1-based inclusive -> 0-based exclusive
 ```
 
-**Die Erkenntnis**:
-* Parser gibt 1-based **inclusive** line numbers (wie Vim: Zeile 5 bis Zeile 7)
-* API erwartet 0-based **exclusive** end (wie Arrays: indices [4, 7))
-* Die Konvertierung ist: `start = line - 1`, `end = end_line` (OHNE -1!)
+**The insight**:
+* the parser gives 1-based **inclusive** line numbers (like Vim: line 5 through line 7)
+* the API expects a 0-based **exclusive** end (like arrays: indices [4, 7))
+* the conversion is: `start = line - 1`, `end = end_line` (WITHOUT -1!)
 
-Dadurch werden endlich die richtigen Zeilen ersetzt statt vorher/nachher eingefügt.
+With that, the right lines finally get replaced instead of being inserted before or after.
 
-## Verwendung
+## Usage
 
-### Basis-Syntax
+### Base syntax
 
 ```vim
-:MigrateNotify              " Aktuelle Zeile
-:MigrateNotify %            " Ganzer Buffer (mit Picker)
-:MigrateNotify cwd          " Alle Lua-Files im CWD (mit Picker)
-:'<,'>MigrateNotify         " Visual selection / Range
+:MigrateNotify              " the current line
+:MigrateNotify %            " the whole buffer (with a picker)
+:MigrateNotify cwd          " all Lua files in the CWD (with a picker)
+:'<,'>MigrateNotify         " visual selection / range
 ```
 
-### Mit .create() Import
+### With a .create() import
 
-Verwende `--create` um statt:
+Use `--create` to generate, instead of this import line:
 ```lua
 local notify = require("lib.notify")
 ```
 
-Diese Import-Zeile zu generieren:
+this one:
 ```lua
 local notify = require("lib.notify").create("")
 ```
 
-**Beispiele:**
+**Examples:**
 ```vim
-:MigrateNotify % --create       " Buffer mit .create() import
-:MigrateNotify cwd --create     " CWD mit .create() import
-:MigrateNotify --create         " Aktuelle Zeile mit .create() import
+:MigrateNotify % --create       " the buffer with a .create() import
+:MigrateNotify cwd --create     " the CWD with a .create() import
+:MigrateNotify --create         " the current line with a .create() import
 ```
 
-**Verhalten:**
-- Prüft ob bereits ein Import existiert (mit oder ohne `.create()`)
-- Bei `--create`: Fügt `.create("")` Import ein an der ersten Nicht-Kommentar-Zeile
-- Ohne `--create`: Fügt einfachen Import an Zeile 1 ein
-- Bestehende `.create("module")` Imports werden erkannt und nicht dupliziert
+**Behaviour:**
+- checks whether an import already exists (with or without `.create()`)
+- with `--create`: inserts a `.create("")` import at the first non-comment line
+- without `--create`: inserts a plain import at line 1
+- existing `.create("module")` imports are recognized and not duplicated
 
 ---

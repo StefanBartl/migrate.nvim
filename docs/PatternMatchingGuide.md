@@ -1,25 +1,25 @@
 # Pattern Matching Guide
 
-Praktischer Guide für Pattern-Erkennung in Migration-Modulen.
+A practical guide to pattern detection in migration modules.
 
 ## Table of content
 
   - [Regex vs Treesitter](#regex-vs-treesitter)
-    - [Wann Regex verwenden?](#wann-regex-verwenden)
-    - [Wann Treesitter verwenden?](#wann-treesitter-verwenden)
+    - [When to use regex?](#when-to-use-regex)
+    - [When to use treesitter?](#when-to-use-treesitter)
   - [Lua Pattern Basics](#lua-pattern-basics)
     - [Grundlegende Metacharacters](#grundlegende-metacharacters)
     - [Wichtige Patterns](#wichtige-patterns)
   - [Pattern Examples](#pattern-examples)
     - [1. Simple Function Call](#1-simple-function-call)
-    - [2. Function Call mit Argument](#2-function-call-mit-argument)
-    - [3. Mit verschiedenen Quotes](#3-mit-verschiedenen-quotes)
-    - [4. Prefix-Variationen](#4-prefix-variationen)
-    - [5. Multiline mit Balance-Check](#5-multiline-mit-balance-check)
+    - [2. Function call with an argument](#2-function-call-with-an-argument)
+    - [3. With different quotes](#3-with-different-quotes)
+    - [4. Prefix variations](#4-prefix-variations)
+    - [5. Multiline with a balance check](#5-multiline-with-a-balance-check)
   - [Common Pitfalls](#common-pitfalls)
-    - [1. Vergessenes Escaping](#1-vergessenes-escaping)
+    - [1. Forgotten escaping](#1-forgotten-escaping)
     - [2. Greedy Matching Problem](#2-greedy-matching-problem)
-    - [3. Vergessene Anchors](#3-vergessene-anchors)
+    - [3. Forgotten anchors](#3-forgotten-anchors)
     - [4. Quote-Handling](#4-quote-handling)
   - [Advanced Techniques](#advanced-techniques)
     - [1. Balanced Expression Capture](#1-balanced-expression-capture)
@@ -42,33 +42,33 @@ Praktischer Guide für Pattern-Erkennung in Migration-Modulen.
 
 ## Regex vs Treesitter
 
-### Wann Regex verwenden?
+### When to use regex?
 
-✅ **Verwende Regex wenn**:
-- Pattern ist line-based
-- Single-line Replacements
-- Einfache Struktur (function calls, simple expressions)
-- Schnelle Iteration wichtig ist
+✅ **Use regex when**:
+- the pattern is line-based
+- single-line replacements
+- the structure is simple (function calls, simple expressions)
+- fast iteration matters
 
-**Beispiele**:
+**Examples**:
 - `vim.notify(...)` → `notify.level(...)`
 - `nvim_buf_get_option(...)` → `nvim_get_option_value(...)`
 - Import statements
 
-### Wann Treesitter verwenden?
+### When to use treesitter?
 
-✅ **Verwende Treesitter wenn**:
-- AST-Struktur wichtig ist
-- Nested expressions
-- Context-Awareness nötig (String vs Code)
-- Präzise Code-Manipulation
+✅ **Use treesitter when**:
+- the AST structure matters
+- nested expressions
+- context awareness is needed (string vs. code)
+- precise code manipulation
 
-**Beispiele**:
-- Refactoring von Class-Strukturen
+**Examples**:
+- refactoring class structures
 - Type-System Migrationen
 - Complex Expression-Rewrites
 
-⚠️ **Vorsicht**: Treesitter offset-Handling ist komplex! Siehe `notify` Module Lessons Learned.
+⚠️ **Careful**: treesitter offset handling is complex! See the `notify` module's lessons learned.
 
 ## Lua Pattern Basics
 
@@ -94,7 +94,7 @@ Praktischer Guide für Pattern-Erkennung in Migration-Modulen.
 
 **Dot Escaping**:
 ```lua
-"vim.notify"     -- FALSCH! Matched auch "vimXnotify"
+"vim.notify"     -- WRONG! also matches "vimXnotify"
 "vim%.notify"    -- RICHTIG
 ```
 
@@ -111,8 +111,8 @@ Praktischer Guide für Pattern-Erkennung in Migration-Modulen.
 
 **Optional Whitespace**:
 ```lua
-"notify%s*%("    -- 0 oder mehr spaces
-"notify%s+%("    -- 1 oder mehr spaces
+"notify%s*%("    -- 0 or more spaces
+"notify%s+%("    -- 1 or more spaces
 ```
 
 ## Pattern Examples
@@ -129,7 +129,7 @@ if msg then
 end
 ```
 
-### 2. Function Call mit Argument
+### 2. Function call with an argument
 
 ```lua
 -- Match: vim.notify("msg", vim.log.levels.INFO)
@@ -141,10 +141,10 @@ if msg and level then
 end
 ```
 
-### 3. Mit verschiedenen Quotes
+### 3. With different quotes
 
 ```lua
--- Match: option("name") oder option('name')
+-- match: option("name") or option('name')
 local function match_option(line)
   -- Capture quote type
   local quote, name = line:match('option%s*%(%s*(["\'])(.-)%1%s*%)')
@@ -155,7 +155,7 @@ local function match_option(line)
 end
 ```
 
-### 4. Prefix-Variationen
+### 4. Prefix variations
 
 ```lua
 -- Match: vim.api.func(), api.func(), func()
@@ -179,14 +179,14 @@ for pattern_prefix, replacement_prefix in pairs(prefix_map) do
 end
 ```
 
-### 5. Multiline mit Balance-Check
+### 5. Multiline with a balance check
 
 ```lua
--- Für Patterns die über mehrere Zeilen gehen
+-- for patterns that span several lines
 local function find_call_end(lines, start_idx)
   local paren_count = 0
 
-  -- Zähle Klammern
+  -- count the brackets
   for i = start_idx, #lines do
     local line = lines[i]
 
@@ -224,12 +224,12 @@ end
 
 ## Common Pitfalls
 
-### 1. Vergessenes Escaping
+### 1. Forgotten escaping
 
 ```lua
--- FALSCH
+-- WRONG
 "vim.api.nvim_buf_get_option"
--- Matched auch: "vimXapiXnvim_buf_get_option"
+-- also matches: "vimXapiXnvim_buf_get_option"
 
 -- RICHTIG
 "vim%.api%.nvim_buf_get_option"
@@ -241,7 +241,7 @@ end
 -- Input: 'notify("test", level), notify("test2", level)'
 -- Pattern: 'notify%s*%((.*)%)'
 
--- FALSCH: Matched den GANZEN String bis zur letzten )
+-- WRONG: matches the WHOLE string up to the last )
 -- Ergebnis: '"test", level), notify("test2", level'
 
 -- RICHTIG: Non-greedy
@@ -249,28 +249,28 @@ end
 -- Ergebnis: '"test", level'
 ```
 
-### 3. Vergessene Anchors
+### 3. Forgotten anchors
 
 ```lua
--- Pattern ohne ^$ matched auch in Strings!
+-- a pattern without ^$ matches inside strings too!
 
--- FALSCH:
+-- WRONG:
 local pattern = 'vim%.notify%s*%((.-)%)'
 
 -- Code:
-local example = 'vim.notify("in string", level)'  -- Wird gematched!
+local example = 'vim.notify("in string", level)'  -- gets matched!
 
--- BESSER (wenn single-line):
+-- BETTER (for single-line):
 local pattern = '^%s*vim%.notify%s*%((.-)%).*$'
--- ^%s* = Start mit optional whitespace
--- .*$ = Rest der Zeile
+-- ^%s* = start with optional whitespace
+-- .*$ = the rest of the line
 ```
 
 ### 4. Quote-Handling
 
 ```lua
--- FALSCH: Hardcoded quote type
-'option%s*%(%s*"(.-)"%s*%)'  -- Funktioniert nur für "
+-- WRONG: hardcoded quote type
+'option%s*%(%s*"(.-)"%s*%)'  -- only works for "
 
 -- RICHTIG: Capture quote type
 'option%s*%(%s*(["\'])(.-)%1%s*%)'
@@ -452,7 +452,7 @@ end
 ### 1. Pre-compiled Patterns
 
 ```lua
--- LANGSAM (compile bei jedem call)
+-- SLOW (compiled on every call)
 local function migrate(line)
   return line:gsub('vim%.notify%s*%((.-)%)', 'notify(%1)')
 end

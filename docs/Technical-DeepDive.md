@@ -1,10 +1,10 @@
 # Technical Deep Dive
 
-Technische Dokumentation der `usrcmds.migrate` Infrastruktur.
+Technical documentation of the `usrcmds.migrate` infrastructure.
 
 ## Table of content
 
-  - [Architektur-Übersicht](#architektur-bersicht)
+  - [Architecture overview](#architecture-overview)
   - [Core Components](#core-components)
     - [1. command.lua - Command Handler](#1-commandlua-command-handler)
     - [2. picker.lua - Telescope UI](#2-pickerlua-telescope-ui)
@@ -19,7 +19,7 @@ Technische Dokumentation der `usrcmds.migrate` Infrastruktur.
     - [4. Self-Migration Prevention](#4-self-migration-prevention)
   - [Performance Considerations](#performance-considerations)
     - [1. Lazy Buffer Loading](#1-lazy-buffer-loading)
-    - [2. Ripgrep für CWD-Scan (opt module)](#2-ripgrep-fr-cwd-scan-opt-module)
+    - [2. Ripgrep for the CWD scan (opt module)](#2-ripgrep-for-the-cwd-scan-opt-module)
   - [Error Handling](#error-handling)
     - [Graceful Degradation](#graceful-degradation)
     - [User Feedback](#user-feedback)
@@ -28,7 +28,7 @@ Technische Dokumentation der `usrcmds.migrate` Infrastruktur.
     - [Unit Tests (Empfohlen)](#unit-tests-empfohlen)
     - [Integration Tests](#integration-tests)
   - [Future Improvements](#future-improvements)
-    - [1. AST-based Detection (mit Vorsicht!)](#1-ast-based-detection-mit-vorsicht)
+    - [1. AST-based Detection (with care!)](#1-ast-based-detection-with-care)
     - [2. Incremental Parsing](#2-incremental-parsing)
     - [3. Dry-Run Mode](#3-dry-run-mode)
     - [4. Undo-Stack Integration](#4-undo-stack-integration)
@@ -40,7 +40,7 @@ Technische Dokumentation der `usrcmds.migrate` Infrastruktur.
 
 ---
 
-## Architektur-Übersicht
+## Architecture overview
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -78,10 +78,10 @@ Technische Dokumentation der `usrcmds.migrate` Infrastruktur.
 
 ### 1. command.lua - Command Handler
 
-**Verantwortlichkeit**: Unified command registration und routing.
+**Responsibility**: unified command registration and routing.
 
 **Key Features**:
-- Einheitliche Syntax über alle Module
+- a uniform syntax across every module
 - Range/Mode Detection
 - Argument Parsing
 - Auto-completion
@@ -117,11 +117,11 @@ end
 
 ### 2. picker.lua - Telescope UI
 
-**Verantwortlichkeit**: Generic selection interface für alle Migrations.
+**Responsibility**: a generic selection interface for every migration.
 
 **Key Features**:
 - Multi-select Support (`<Tab>`)
-- Preview mit Syntax-Highlighting
+- preview with syntax highlighting
 - Batch-Apply (`<S-A>`)
 - Customizable Entry/Preview Formatters
 
@@ -139,8 +139,9 @@ end
 ```
 
 **Preview Flattening**:
-Problem: `format_preview` kann mehrzeilige Strings zurückgeben (`"line1\nline2"`).
-Lösung: Flatten mit newline-split:
+Problem: `format_preview` can return multiline strings (`"line1
+line2"`).
+Solution: flatten with a newline split:
 ```lua
 local flattened = {}
 for _, line in ipairs(lines) do
@@ -152,7 +153,7 @@ end
 
 ### 3. buffer.lua - Buffer Operations
 
-**Verantwortlichkeit**: Sichere Buffer/File I/O operations.
+**Responsibility**: safe buffer/file I/O operations.
 
 **Key Operations**:
 
@@ -196,7 +197,7 @@ end
 
 ### Required Interface
 
-Jedes Migration-Modul muss diese Funktionen implementieren:
+Every migration module has to implement these functions:
 
 ```lua
 ---@param bufnr integer
@@ -245,47 +246,47 @@ end
 
 ### 1. Index-Konvertierung
 
-**Problem**: Vim verwendet 1-based line numbers, Neovim API 0-based indices.
+**Problem**: Vim uses 1-based line numbers, the Neovim API 0-based indices.
 
-**Lösung**:
+**Solution**:
 ```lua
--- Parser/Scanner gibt 1-based zurück (wie Vim)
+-- the parser/scanner returns 1-based (like Vim)
 local match = {
-  line = 5,      -- Zeile 5 (Vim-Style)
-  end_line = 7,  -- bis Zeile 7 (inclusive)
+  line = 5,      -- line 5 (Vim style)
+  end_line = 7,  -- through line 7 (inclusive)
 }
 
--- Für nvim_buf_set_lines konvertieren
+-- convert for nvim_buf_set_lines
 local start_idx = match.line - 1    -- 4 (0-based)
 local end_idx = match.end_line      -- 7 (0-based exclusive!)
 
 -- Wichtig: end_idx NICHT -1!
 -- nvim_buf_set_lines(bufnr, 4, 7, false, ...)
--- ersetzt indices [4,5,6] = Zeilen [5,6,7]
+-- replaces indices [4,5,6] = lines [5,6,7]
 ```
 
 **Beweis**:
 ```lua
--- Test in Neovim:
+-- test in Neovim:
 vim.api.nvim_buf_set_lines(0, 4, 7, false, {"NEW"})
--- Ersetzt Zeilen 5,6,7 mit "NEW"
+-- replaces lines 5,6,7 with "NEW"
 ```
 
 ### 2. Descending Order Application
 
-**Problem**: Bei Replacements von oben nach unten verschieben sich Zeilen.
+**Problem**: replacing from the top down shifts the lines.
 
-**Beispiel**:
+**Example**:
 ```
-Zeile 5: Match A
-Zeile 10: Match B
+line 5: match A
+line 10: match B
 
-1. Ersetze Zeile 5 (multiline → single line)
-   → Alle folgenden Zeilen verschieben sich um -2
-   → Match B ist jetzt bei Zeile 8 statt 10!
+1. Replace line 5 (multiline → single line)
+   → every following line shifts by -2
+   → match B is now at line 8 instead of 10!
 ```
 
-**Lösung**: Descending order
+**Solution**: descending order
 ```lua
 table.sort(matches, function(a, b)
   if a.extra.end_line == b.extra.end_line then
@@ -294,14 +295,14 @@ table.sort(matches, function(a, b)
   return a.extra.end_line > b.extra.end_line
 end)
 
--- Apply: 10 → 5 (nicht 5 → 10)
+-- apply: 10 → 5 (not 5 → 10)
 ```
 
 ### 3. Import Offset Compensation
 
-**Problem**: Import-Injection fügt Zeilen ein, verschiebt alle Matches.
+**Problem**: the import injection inserts lines and shifts every match.
 
-**Beispiel**:
+**Example**:
 ```lua
 -- Vorher:
 [Line 1] local M = {}
@@ -311,15 +312,15 @@ end)
 [Line 1] local notify = require("lib.notify")
 [Line 2]
 [Line 3] local M = {}
-[Line 7] vim.notify(...)  ← Match ist jetzt hier!
+[Line 7] vim.notify(...)  ← the match is here now!
 ```
 
-**Lösung**:
+**Solution**:
 ```lua
 local import_added = refactor.inject_import(bufnr)
 
 if import_added then
-  local offset = 2  -- 2 Zeilen (import + blank line)
+  local offset = 2  -- 2 lines (import + blank line)
   for _, match in ipairs(matches) do
     match.lnum = match.lnum + offset
     match.extra.end_line = match.extra.end_line + offset
@@ -329,16 +330,16 @@ end
 
 ### 4. Self-Migration Prevention
 
-**Problem**: Module scannt sich selbst und migriert eigenen Code.
+**Problem**: the module scans itself and migrates its own code.
 
-**Beispiel**: `init.lua` hat Zeile:
+**Example**: `init.lua` has the line:
 ```lua
 vim.notify("Applied migration", vim.log.levels.INFO)
 ```
 
-Bei `:MigrateNotify cwd` wird das auch gematched und kaputt gemacht!
+With `:MigrateNotify cwd` that gets matched and broken too!
 
-**Lösung**: Exclusion Pattern
+**Solution**: an exclusion pattern
 ```lua
 local function should_exclude(filepath)
   local normalized = filepath:gsub("\\", "/")
@@ -373,9 +374,9 @@ function M.ensure_buffer(filepath)
 end
 ```
 
-### 2. Ripgrep für CWD-Scan (opt module)
+### 2. Ripgrep for the CWD scan (opt module)
 
-Statt jeden File zu laden und zu parsen:
+Instead of loading and parsing every file:
 ```lua
 local cmd = { "rg", "--vimgrep", pattern }
 local result = fn.systemlist(cmd)
@@ -388,13 +389,13 @@ end
 ```
 
 **Trade-off**:
-- ✅ Schneller für große Projekte
-- ❌ Braucht externe Dependency (ripgrep)
-- ❌ Weniger flexibel (nur line-based)
+- ✅ faster for large projects
+- ❌ needs an external dependency (ripgrep)
+- ❌ less flexible (line-based only)
 
-notify module verwendet nicht ripgrep weil:
-- Multiline detection nötig
-- Muss Buffer laden für balanced-parentheses check
+The notify module does not use ripgrep because:
+- multiline detection is needed
+- it has to load the buffer for the balanced-parentheses check
 
 ## Error Handling
 
@@ -474,17 +475,17 @@ assert(lines[1] == 'notify.info("test")')
 
 ## Future Improvements
 
-### 1. AST-based Detection (mit Vorsicht!)
+### 1. AST-based Detection (with care!)
 
-Treesitter könnte verwendet werden für:
-- ✅ Präzise nested expression handling
-- ✅ Kontext-Awareness (String vs Code)
+Treesitter could be used for:
+- ✅ precise nested expression handling
+- ✅ context awareness (string vs. code)
 
-Aber: Vorsicht mit offset-Berechnungen!
+But: take care with the offset arithmetic!
 
 ### 2. Incremental Parsing
 
-Für große Files:
+For large files:
 ```lua
 -- Parse in chunks
 for chunk_start = 1, line_count, 1000 do
