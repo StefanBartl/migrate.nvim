@@ -1,4 +1,4 @@
--- docs/TESTS/notify_parser_spec.lua — migrate.notify.parser.* (pure detection
+-- TESTS/notify_parser_spec.lua — migrate.notify.parser.* (pure detection
 -- + migration; no lib.nvim/telescope.nvim dependency).
 
 return function(H)

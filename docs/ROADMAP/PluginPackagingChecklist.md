@@ -37,12 +37,12 @@ Copy of the personal master checklist
 
 ## 3. Tests
 
-- [x] `docs/TESTS/**` geschrieben — covers `migrate.opt.migrator`,
+- [x] `TESTS/**` geschrieben — covers `migrate.opt.migrator`,
   `migrate.hl.migrator`, `migrate.lsp.migrator` (all extracted for
   testability) and `migrate.notify.parser.*`. `migrate.opt`/`migrate.notify`/
   `migrate.hl`/`migrate.lsp`/`migrate.common.*` hard-require
   `lib.nvim`/`telescope.nvim` and stay out of the headless suite (documented
-  in `docs/TESTS/README.md`).
+  in `TESTS/README.md`).
 
 ---
 
@@ -58,7 +58,7 @@ Copy of the personal master checklist
         (kein separates `autocmds.lua` — migrate.nvim definiert keine
         Autocmds; eine leere Datei nur für Formkonsistenz wurde bewusst
         weggelassen, siehe `docs/BINDINGS.md`)
-  - [ ] `docs/TESTS/**` in `:checkhealth` ausführen — bewusst weggelassen
+  - [ ] `TESTS/**` in `:checkhealth` ausführen — bewusst weggelassen
     (nicht state of the art, siehe cascade.nvim-Präzedenzfall)
 
 ---

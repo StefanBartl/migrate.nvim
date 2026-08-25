@@ -91,7 +91,7 @@ sind hier unproblematisch.
 
 - `:checkhealth migrate` zeigt Modul-/Dependency-/Config-Status inkl.
   which-key-Erkennung.
-- Die Testsuite (`docs/TESTS/`) erlaubt isoliertes Testen der reinen
+- Die Testsuite (`TESTS/`) erlaubt isoliertes Testen der reinen
   Parser-/Migrator-Funktionen.
 - **Dedizierter Debug-Schalter** — `setup({ debug = true })` +
   `lua/migrate/common/debug.lua` tracen den scan → picker → apply → write

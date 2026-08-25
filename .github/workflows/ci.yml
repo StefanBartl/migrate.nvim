@@ -14,7 +14,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           version: latest
-          args: --check lua/ docs/TESTS/
+          args: --check lua/ TESTS/
 
   luacheck:
     runs-on: ubuntu-latest
@@ -23,7 +23,7 @@ jobs:
       - uses: leafo/gh-actions-lua@v10
       - uses: leafo/gh-actions-luarocks@v4
       - run: luarocks install luacheck
-      - run: luacheck lua/ docs/TESTS/
+      - run: luacheck lua/ TESTS/
 
   test:
     runs-on: ubuntu-latest
@@ -34,4 +34,4 @@ jobs:
           neovim: true
           version: stable
       - name: Run headless test suite
-        run: nvim --headless -u NONE -c "set rtp+=." -c "luafile docs/TESTS/run.lua" -c "qa!"
+        run: nvim --headless -u NONE -c "set rtp+=." -c "luafile TESTS/run.lua" -c "qa!"

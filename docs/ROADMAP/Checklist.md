@@ -26,7 +26,7 @@ Legende: ✅ · ⚠️ bewusste Abweichung/offen · n/a
 | UI-Cleanup | 🟡 | n/a | Kein eigenes UI/Fenster zu bereinigen (Telescope-Picker). |
 | Performance-Hotspots (concat/reserve) | 🟡 | ✅ | `table.concat` bei Multiline-Migration; gebündelte `batch_write` statt Einzel-Writes. |
 | Annotationen vollständig | 🟡 | ✅ | `@module/@brief/@description` + `@param/@return`; Aliase in `@types/init.lua` + `common/@types.lua`. |
-| Testbarkeit (pure functions) | 🟡 | ✅ | `opt.migrator`, `notify.parser.*` sind rein; `docs/TESTS/`-Suite deckt sie ab. |
+| Testbarkeit (pure functions) | 🟡 | ✅ | `opt.migrator`, `notify.parser.*` sind rein; `TESTS/`-Suite deckt sie ab. |
 | Import-Reihenfolge | 🟢 | ✅ | Kern/Config → Feature-Module → Bindings (z. B. `opt/init.lua`: common.* → opt.migrator → lib.nvim.notify). |
 
 ### Bonuspunkt: `lib`-Modul nutzen — ✅
@@ -72,12 +72,12 @@ ergänzt.
 
 ### 6. Testbarkeit und Lesbarkeit — ✅
 DI: Config wird als `opts` durchgereicht, kein Hard-Wiring ✅. Pure Functions ✅
-(extra für Testbarkeit aus `opt/init.lua` extrahiert). Test-Entry `docs/TESTS/run.lua` ✅.
+(extra für Testbarkeit aus `opt/init.lua` extrahiert). Test-Entry `TESTS/run.lua` ✅.
 
 ### 7. Tooling — ✅
 - Lua LS: `.luarc.json` vorhanden (`diagnostics.globals=vim`, `workspace.library`) ✅.
 - Formatter/Linter im CI: ✅ `.github/workflows/ci.yml` (seit `a1189a4`) läuft
-  `stylua --check`, `luacheck` und den headless `docs/TESTS/run.lua`-Suite auf
+  `stylua --check`, `luacheck` und den headless `TESTS/run.lua`-Suite auf
   jedem Push/PR gegen `main`. Badge im README.
 
 ## Coding-Checkliste
@@ -124,7 +124,7 @@ simpler Zähler, kein Datenstruktur-Kapitel-relevanter Algorithmus.
 | Neovim-API | Buffer-Guards + Re-Validierung in async Callbacks | keine |
 | Performance | gebündelte/async Writes, keine Hot-Loops | keine |
 | Doku/Annotation | `@see`-Querverweise ergänzt; 2 `@types`-Dateien bleiben bewusste Abweichung | keine |
-| Tests | `docs/TESTS/` Suite grün (4 Specs: opt/notify/hl/lsp) | mehr Randfälle weiterhin denkbar (String-Literal-Notify, Multiline-Aliase) |
+| Tests | `TESTS/` Suite grün (4 Specs: opt/notify/hl/lsp) | mehr Randfälle weiterhin denkbar (String-Literal-Notify, Multiline-Aliase) |
 | Tooling/CI | `.github/workflows/ci.yml` (stylua/luacheck/headless Tests) | keine |
 | checkhealth-Modul? | ✅ `:checkhealth migrate` (Deps/Config/which-key) | keine |
 

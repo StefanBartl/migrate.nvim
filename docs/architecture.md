@@ -18,7 +18,7 @@ migrate.nvim/
     @types/init.lua
   docs/BINDINGS.md          -- binding cheatsheet
   docs/USAGE-EXAMPLES.md    -- before/after scenarios
-  docs/TESTS/                -- headless spec suite (opt/hl/lsp.migrator, notify.parser.*)
+  TESTS/                -- headless spec suite (opt/hl/lsp.migrator, notify.parser.*)
   doc/migrate.txt           -- :h migrate
 ```
 

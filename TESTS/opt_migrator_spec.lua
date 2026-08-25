@@ -1,4 +1,4 @@
--- docs/TESTS/opt_migrator_spec.lua — migrate.opt.migrator (pure regex rewrite).
+-- TESTS/opt_migrator_spec.lua — migrate.opt.migrator (pure regex rewrite).
 
 return function(H)
   local eq = H.eq

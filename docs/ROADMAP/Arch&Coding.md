@@ -32,7 +32,7 @@ Legende: ✅ erfüllt · ⚠️ bewusste Abweichung · ❌ offen · n/a nicht zu
 | Regel | Status | Beleg |
 | --- | --- | --- |
 | Modul = eine Verantwortung | ✅ | `opt/migrator` (Regex-Rewrite), `notify/parser/*` (Erkennung), `notify/refactor/*` (Anwendung: import/cleanup/apply/write), `common/*` (geteilte Command-/Picker-/Buffer-Infrastruktur), `bindings/*` (usrcmds/keymaps/which-key). |
-| Reine Funktionen bevorzugen | ✅ | `opt.migrator.migrate_line`, `notify.parser.patterns.*`, `notify.parser.migrator.*`, `notify.parser.extractor.*` sind seiteneffektfrei (siehe `docs/TESTS/`). |
+| Reine Funktionen bevorzugen | ✅ | `opt.migrator.migrate_line`, `notify.parser.patterns.*`, `notify.parser.migrator.*`, `notify.parser.extractor.*` sind seiteneffektfrei (siehe `TESTS/`). |
 | Lokale statt globale Funktionen | ✅ | Keine globalen Funktionen; interne Helfer sind `local`. |
 | Entwurfsmuster wenn sinnvoll | ✅ | „Strategy"-artige Trennung Scan/Apply/Picker über `MigrateCommon.CommandOpts` (`common/command.lua`); Facade in `init.lua`. |
 | Tools via Registry | ✅ | `lua/migrate/registry.lua` — `opt`/`notify`/`hl`/`lsp` sind `M.register()`-Einträge; `config`, `bindings`, `health`, `init.enable_all()`/`disable_all()` iterieren die Registry statt Module namentlich zu verdrahten. Siehe [`docs/FEATURES.md`](../FEATURES.md#pluggable-migration-registry). |
@@ -66,8 +66,8 @@ migrate.nvim ist **funktional**, nicht OO: keine Metatables, kein `__index`, kei
 | --- | --- | --- |
 | Klein & fokussiert (SRP) | ✅ | siehe §2. |
 | Klarheit vor Kürze | ✅ | Sprechende Namen, Kommentare an nicht-offensichtlichen Stellen (z. B. `notify/init.lua`'s `PLUGIN_ROOT`-Exclusion). |
-| Testbarkeit durch Design | ✅ | `opt.migrator` wurde eigens aus `opt/init.lua` extrahiert, um ohne `lib.nvim`/`telescope.nvim` testbar zu sein (siehe `docs/TESTS/README.md`). |
-| Separater Test-Entry | ✅ | `docs/TESTS/run.lua` + `harness.lua` + 2 Specs (`opt_migrator_spec`, `notify_parser_spec`). |
+| Testbarkeit durch Design | ✅ | `opt.migrator` wurde eigens aus `opt/init.lua` extrahiert, um ohne `lib.nvim`/`telescope.nvim` testbar zu sein (siehe `TESTS/README.md`). |
+| Separater Test-Entry | ✅ | `TESTS/run.lua` + `harness.lua` + 2 Specs (`opt_migrator_spec`, `notify_parser_spec`). |
 | Snapshot/Restore | n/a | Kein langlebiger State zum Snapshotten. |
 
 ## §7 Fehlerbehandlung & Validierung — ⚠️ (wie §1)

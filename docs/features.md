@@ -198,7 +198,7 @@ remaining gap (a `/types` folder per subdirectory instead of two central
 `@types` files) is a documented, deliberate deviation, not an open item.
 
 - **CI:** `.github/workflows/ci.yml` — `stylua --check`, `luacheck`, and the
-  headless `docs/TESTS/` suite on every push/PR to `main`.
+  headless `TESTS/` suite on every push/PR to `main`.
 - **Audit trail:** [`ROADMAP/Checklist.md`](ROADMAP/Checklist.md) (master
   checklist), [`ROADMAP/Arch&Coding.md`](ROADMAP/Arch&Coding.md)
   (architecture & coding rules), [`ROADMAP/Zentral-Prinzipien.md`](ROADMAP/Zentral-Prinzipien.md)

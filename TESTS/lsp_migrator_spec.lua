@@ -1,4 +1,4 @@
--- docs/TESTS/lsp_migrator_spec.lua — migrate.lsp.migrator (pure regex rewrite).
+-- TESTS/lsp_migrator_spec.lua — migrate.lsp.migrator (pure regex rewrite).
 
 return function(H)
   local eq = H.eq
