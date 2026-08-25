@@ -226,7 +226,8 @@ function M.migrate_existing_notify_line(line)
     local replacement = has_opts and string.format("notify.%s(%s, %s)", method, msg, has_opts)
       or string.format("notify.%s(%s)", method, msg)
 
-    -- WICHTIG: KOMPLETTE Zeile zurückgeben
+    -- Return the WHOLE line, not just the replacement: the caller writes it
+    -- back verbatim, so anything before or after the match has to come along.
     local before = line:sub(1, start_pos - 1)
     local after = line:sub(end_pos + 1)
 
