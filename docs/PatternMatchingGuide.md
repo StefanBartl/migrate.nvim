@@ -102,7 +102,7 @@ A practical guide to pattern detection in migration modules.
 ```lua
 -- Input: "foo(bar, baz)"
 "%((.*)%)"       -- Matched: "(bar, baz)" (greedy)
-"%((.-)%)"       -- Matched: "(bar, baz)" (non-greedy, gleich hier)
+"%((.-)%)"       -- Matched: "(bar, baz)" (non-greedy, stops right here)
 
 -- Input: "foo(bar) and foo(baz)"
 "%((.*)%)"       -- Matched: "(bar) and foo(baz)" (greedy!)
