@@ -31,11 +31,11 @@ Legende: ✅ · ⚠️ bewusste Abweichung/offen · n/a
 
 ### Bonuspunkt: `lib`-Modul nutzen — ✅
 
-`lib.nvim.notify` (Kommando-/UI-Schicht) und `lib.nvim.map` (optionale
+`lib.nvim.notify` (Kommando-/UI-Schicht) und `lib.nvim.bindings.keymap` (optionale
 Keymaps) werden genutzt — als **harte**, nicht soft, Dependency (siehe
-`health.lua`). `lib.nvim.usercmd.composer` wird seit
+`health.lua`). `lib.nvim.bindings.usercmd.composer` wird seit
 `8d26139` (`refactor(usrcmds): migrate :MigrateOpt/:MigrateNotify to
-lib.nvim.usercmd.composer`) für alle Commands genutzt (`common/command.lua`,
+lib.nvim.bindings.usercmd.composer`) für alle Commands genutzt (`common/command.lua`,
 `notify/init.lua`) — kein rohes `nvim_create_user_command` mehr im Code.
 `lib.cross`/`memo`/`lazy` (Top-Level): migrate.nvim braucht sie nicht (schon
 cross-platform durch Pfadnormalisierung; kein Memoization-Bedarf); `lib.lua.lazy`
@@ -136,7 +136,7 @@ migrate.nvim erfüllt die Master-Checklist inzwischen vollständig. Die vier
 ursprünglich offenen Punkte sind alle nachgezogen:
 
 1. ~~Kein CI-Workflow~~ → `.github/workflows/ci.yml` (`a1189a4`).
-2. ~~`lib.nvim.usercmd` nicht genutzt~~ → `lib.nvim.usercmd.composer`
+2. ~~`lib.nvim.bindings.usercmd` nicht genutzt~~ → `lib.nvim.bindings.usercmd.composer`
    durchgängig (`8d26139`).
 3. ~~Kein Registry-Pattern~~ → `lua/migrate/registry.lua` (`b6aa043`), inzwischen
    4 Module (`opt`/`notify`/`hl`/`lsp`).

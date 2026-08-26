@@ -8,7 +8,7 @@
 ---   - CWD mode (cwd argument)
 --- Each migration type provides callbacks for scanning and applying.
 ---
---- Built on `lib.nvim.usercmd.composer` (a `path = {}` root route — a flat
+--- Built on `lib.nvim.bindings.usercmd.composer` (a `path = {}` root route — a flat
 --- grammar, no subcommand word). The route declares `args` purely to drive
 --- `<Tab>` completion; dispatch bypasses composer's own bound `ctx.args` and
 --- reads `ctx.raw` instead (composer's untouched nvim-callback opts — same
@@ -24,7 +24,7 @@
 
 require("migrate.common.@types")
 local notify = require("lib.nvim.notify").create("[migrate]")
-local composer = require("lib.nvim.usercmd.composer")
+local composer = require("lib.nvim.bindings.usercmd.composer")
 local debug = require("migrate.common.debug")
 
 local M = {}

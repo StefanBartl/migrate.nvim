@@ -46,7 +46,7 @@ scenarios (aliasing, multiline calls, batch workflows, edge cases).
 
 ## Commands
 
-Each command is its own [`lib.nvim.usercmd.composer`](https://github.com/StefanBartl/lib.nvim)
+Each command is its own [`lib.nvim.bindings.usercmd.composer`](https://github.com/StefanBartl/lib.nvim)
 verb (a flat root route, no subcommand tree). `:MigrateOpt`, `:MigrateHl`,
 and `:MigrateLsp` share the same argument grammar (registered via the
 `migrate.common.command` factory); `:MigrateNotify` additionally accepts a

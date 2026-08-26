@@ -119,7 +119,7 @@ each of `opt`, `notify`, `hl`, `lsp` to `true`.
 ==============================================================================
 5. COMMANDS                                                  *migrate-commands*
 
-Each command is its own lib.nvim.usercmd.composer verb (a flat root route,
+Each command is its own lib.nvim.bindings.usercmd.composer verb (a flat root route,
 no subcommand tree).
 
                                                               *:MigrateOpt*

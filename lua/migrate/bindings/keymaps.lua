@@ -18,7 +18,7 @@
 --- count-to-address translation, because `:3Migrate` would mean "line 3", not
 --- "three lines from here".
 
-local map = require("lib.nvim.map")
+local map = require("lib.nvim.bindings.keymap")
 local registry = require("migrate.registry")
 
 local M = {}

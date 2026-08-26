@@ -192,7 +192,7 @@ description automatically, with no group/prefix registration performed.
 
 migrate.nvim was audited against the personal Lua/Neovim plugin checklist
 and three personal architecture/coding checklists. Every item the audit
-raised — a CI workflow, the `lib.nvim.usercmd` wrapper, the migration-module
+raised — a CI workflow, the `lib.nvim.bindings.usercmd` wrapper, the migration-module
 registry, `@see` cross-references — has since been implemented; the one
 remaining gap (a `/types` folder per subdirectory instead of two central
 `@types` files) is a documented, deliberate deviation, not an open item.

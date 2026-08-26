@@ -5,7 +5,7 @@
 ---@see migrate.registry
 
 local notify = require("lib.nvim.notify").create("[migrate.notify]")
-local composer = require("lib.nvim.usercmd.composer")
+local composer = require("lib.nvim.bindings.usercmd.composer")
 local debug = require("migrate.common.debug")
 
 local lazy = require("lib.lua.lazy")
@@ -354,7 +354,7 @@ end
 -- Registration
 --------------------------------------------------------------------------------
 
--- Built via lib.nvim.usercmd.composer (a `path = {}` root route). `args` is
+-- Built via lib.nvim.bindings.usercmd.composer (a `path = {}` root route). `args` is
 -- declared purely to drive `<Tab>` completion; dispatch bypasses composer's
 -- own bound ctx.args and reads ctx.raw instead, since `module_name` is always
 -- the *second* whitespace-separated token regardless of range mode (even

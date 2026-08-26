@@ -98,8 +98,8 @@ Kein persistenter Cache, keine Dual-Representation, keine FIFO/History-Strukture
 | Punkt | Status | Anmerkung |
 | --- | --- | --- |
 | `lib.nvim.notify` statt `vim.notify()` | ✅ | Durchgängig in der Kommando-/UI-Schicht. Ausnahme: `bindings/usrcmds.lua`'s Modul-Lade-Fehler nutzt rohes `vim.notify` — bewusst, da an dieser Stelle noch unklar ist, ob `lib.nvim` überhaupt geladen werden konnte. |
-| `lib.nvim.map` statt `vim.keymap.set` | ✅ | `bindings/keymaps.lua` nutzt `lib.nvim.map`. |
-| `lib.nvim.usercmd` statt `nvim_create_user_command` | ✅ | `common/command.lua` und `notify/init.lua` registrieren Commands über `lib.nvim.usercmd.composer` (seit `8d26139`); kein rohes `nvim_create_user_command` mehr im Code. |
+| `lib.nvim.bindings.keymap` statt `vim.keymap.set` | ✅ | `bindings/keymaps.lua` nutzt `lib.nvim.bindings.keymap`. |
+| `lib.nvim.bindings.usercmd` statt `nvim_create_user_command` | ✅ | `common/command.lua` und `notify/init.lua` registrieren Commands über `lib.nvim.bindings.usercmd.composer` (seit `8d26139`); kein rohes `nvim_create_user_command` mehr im Code. |
 | `lib.*augroup`/`lib.*autocmd` | n/a | migrate.nvim registriert keine Autocmds (siehe `docs/BINDINGS.md`). |
 | `lib.cross`/`lib.memo`/`lib.lazy`/`lib.hover_select` | n/a | Kein Cross-Platform-Sonderfall über das bereits Vorhandene hinaus (siehe Cross-Plattform-Review in `docs/ROADMAP/PluginPackagingChecklist.md`); kein Memoization-Bedarf; kein `vim.select`-Einsatz. |
 
@@ -110,7 +110,7 @@ Kein persistenter Cache, keine Dual-Representation, keine FIFO/History-Strukture
 migrate.nvim folgt den Regeln jetzt vollständig. Die vier ursprünglich
 offenen Punkte sind nachgezogen:
 
-1. ~~`lib.nvim.usercmd` statt rohem `nvim_create_user_command`~~ (NVIM-Config-spezifisch) → `lib.nvim.usercmd.composer` durchgängig.
+1. ~~`lib.nvim.bindings.usercmd` statt rohem `nvim_create_user_command`~~ (NVIM-Config-spezifisch) → `lib.nvim.bindings.usercmd.composer` durchgängig.
 2. ~~Kein Tools-Registry-Pattern~~ (§2) → `lua/migrate/registry.lua`, jetzt 4 Module.
 3. ~~Kein `@see`~~ (§5) → Querverweise ergänzt.
 4. **Kein `/types`-Anker pro Subverzeichnis** (§5) — bleibt eine bewusste Abweichung (siehe §5-Tabelle), kein offener Punkt mehr.

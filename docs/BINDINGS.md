@@ -48,7 +48,7 @@ no group/prefix registration is performed (see
 
 Registered when their module is enabled (`opt` / `notify` / `hl` / `lsp`,
 all default to `true`, driven by [`migrate.registry`](../lua/migrate/registry.lua)),
-each its own [`lib.nvim.usercmd.composer`](https://github.com/StefanBartl/lib.nvim)
+each its own [`lib.nvim.bindings.usercmd.composer`](https://github.com/StefanBartl/lib.nvim)
 verb (a flat `path = {}` root route — no subcommand tree). `:MigrateOpt`,
 `:MigrateHl`, and `:MigrateLsp` are registered through the shared factory in
 `lua/migrate/common/command.lua`; `:MigrateNotify` registers directly in

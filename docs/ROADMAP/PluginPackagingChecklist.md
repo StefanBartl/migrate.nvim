@@ -51,7 +51,7 @@ Copy of the personal master checklist
 - [x] `:checkhealth migrate` unterstützt (pre-existing; extended to report
   config + which-key status)
   - [x] `/config`-Ordner mit `config/DEFAULTS.lua` + `config/init.lua` angelegt
-  - [x] `lib.nvim` als (required) Dependency genutzt (`lib.nvim.notify`, `lib.nvim.map`)
+  - [x] `lib.nvim` als (required) Dependency genutzt (`lib.nvim.notify`, `lib.nvim.bindings.keymap`)
   - [ ] Prüfen: Sind alle Plugins `lazy`? — N/A hier: das betrifft die
     konsumierende nvim-Config, nicht dieses Repo selbst.
   - [x] `/bindings`-Ordner angelegt mit `usrcmds`, `keymaps`, `which_key`

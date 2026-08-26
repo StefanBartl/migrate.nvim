@@ -16,8 +16,8 @@ Legende: ✅ erfüllt · ⚠️ teilweise / bewusst abgewogen · ❌ offen
 Anders als bei einem rein optionalen (soft-dependency) Plugin ist `lib.nvim`
 für migrate.nvim eine **harte** Abhängigkeit (siehe `health.lua`: "lib.nvim
 not found (required)"). `lib.nvim.notify` wird durchgängig in der
-Kommando-/UI-Schicht genutzt, `lib.nvim.map` in den optionalen Keymaps,
-`lib.nvim.usercmd.composer` für sämtliche Commands (siehe
+Kommando-/UI-Schicht genutzt, `lib.nvim.bindings.keymap` in den optionalen Keymaps,
+`lib.nvim.bindings.usercmd.composer` für sämtliche Commands (siehe
 [Arch&Coding.md](Arch&Coding.md)). `lib.cross`/`memo`/`lazy`/`hover_select`
 sind n/a bzw. durch eigene, einfachere Lösungen abgedeckt (siehe unten).
 
