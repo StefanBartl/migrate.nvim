@@ -18,13 +18,13 @@
 --- count-to-address translation, because `:3Migrate` would mean "line 3", not
 --- "three lines from here".
 
-local map = require("lib.nvim.bindings.keymap")
+local keymap = require("lib.nvim.bindings.keymap")
 local registry = require("migrate.registry")
 
 local M = {}
 
 ---@param cfg UsrCmds.Migrate.Config
----@return nil
+---@return Lib.Keymap.Registered[]|nil
 function M.setup(cfg)
   local km = cfg.keymaps
   if type(km) ~= "table" then
@@ -33,9 +33,14 @@ function M.setup(cfg)
 
   local count = require("lib.nvim.count")
 
+  ---@type table<string, Lib.Keymap.Action>
+  local actions = {}
+  ---@type string[]
+  local order = {}
+
   for name, entry in pairs(registry.list()) do
-    if km[name] then
-      map("n", km[name], function()
+    actions[name] = {
+      rhs = function()
         local n = count.get()
         if n <= 1 then
           vim.cmd(entry.command)
@@ -45,12 +50,19 @@ function M.setup(cfg)
         local line = vim.api.nvim_win_get_cursor(0)[1]
         local last = math.min(line + n - 1, vim.api.nvim_buf_line_count(0))
         vim.cmd(string.format("%d,%d%s", line, last, entry.command))
-      end, {}, string.format(
-        "migrate: run :%s (current line, or N with a count)",
-        entry.command
-      ))
-    end
+      end,
+      desc = string.format("run :%s (current line, or N with a count)", entry.command),
+    }
+    order[#order + 1] = name
   end
+  table.sort(order)
+
+  -- No defaults: every entry is unset until a user names a key, so setting one
+  -- is what claims it. Declared through the registry all the same, which is
+  -- what turns a mistyped entry name from a silently dead keymap into a
+  -- reported one -- and the names come from `migrate.registry`, so a new
+  -- migration is mappable with no second list to update.
+  return keymap.register("migrate", { order = order, actions = actions }, km)
 end
 
 return M
