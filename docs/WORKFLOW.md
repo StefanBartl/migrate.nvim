@@ -22,9 +22,12 @@ already looking at the offending call. `%` and `cwd` are review-first:
 nothing changes until you act on an entry in the Telescope picker, and
 even then only `cwd` writes the touched files back to disk for you —
 `%`-scope edits stay in the buffer, unsaved, exactly like a manual edit
-would.
+would. Add `-n`/`--dry-run` to a line or range invocation when you want to
+see the before/after first — it's the only preview step those two scopes
+have, since neither opens a picker; `%`/`cwd` accept the flag too but
+already preview through the picker, so it changes nothing there.
 
-## Backup before a `cwd` run — it writes for you, with no dry-run flag
+## Backup before a `cwd` run — it still writes for you, dry-run or not
 
 `:MigrateNotify cwd` (or any module's `cwd` scope) auto-writes every
 touched file the moment you apply a match — there's no `--dry-run` or
