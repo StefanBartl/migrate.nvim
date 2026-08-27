@@ -391,11 +391,30 @@ composer.register_type("MIGRATE_MODULE_NAME", {
 })
 
 ---@internal
+--- Report what a migration *would* do, without touching the buffer. Only
+--- the line and range modes need this: `%`/`cwd` already go through a
+--- picker, which is itself a preview with an apply step.
+---@param matches MigrateCommon.Match[]
+---@param what string  # e.g. "on line 12" / "in range"
+---@return nil
+local function report_dry_run(matches, what)
+  local lines =
+    { string.format("MigrateNotify — %d migration(s) %s, nothing applied:", #matches, what) }
+  for _, m in ipairs(matches) do
+    lines[#lines + 1] = string.format("  %d: %s", m.lnum, vim.trim(m.text or ""))
+    lines[#lines + 1] =
+      string.format("  %s  %s", (" "):rep(#tostring(m.lnum)), vim.trim(m.migrated or ""))
+  end
+  notify.info(table.concat(lines, "\n"))
+end
+
+---@internal
 ---Run one :MigrateNotify invocation. `cmd_opts` is composer's `ctx.raw`
 ---(same shape as the original nvim user-command callback opts).
 ---@param cmd_opts table
+---@param dry_run boolean|nil  # report instead of applying (line/range modes)
 ---@return nil
-local function dispatch(cmd_opts)
+local function dispatch(cmd_opts, dry_run)
   local args_str = cmd_opts.args
   local parts = vim.split(args_str, "%s+", { trimempty = true })
 
@@ -415,6 +434,10 @@ local function dispatch(cmd_opts)
       notify.warn("No matches in range")
       return
     end
+    if dry_run then
+      report_dry_run(matches, "in range")
+      return
+    end
     apply_matches(matches, module_name, false)
   elseif mode == "" then
     -- Current line: no auto-write
@@ -423,6 +446,10 @@ local function dispatch(cmd_opts)
     local matches = scan_range(bufnr, cursor[1], cursor[1])
     if #matches == 0 then
       notify.warn("No matches on current line")
+      return
+    end
+    if dry_run then
+      report_dry_run(matches, string.format("on line %d", cursor[1]))
       return
     end
     apply_matches(matches, module_name, false)
@@ -456,7 +483,7 @@ end
 ---@return nil
 function M.enable()
   composer.verb("MigrateNotify", {
-    desc = "Migrate vim.notify to lib.notify",
+    desc = "Migrate vim.notify to lib.notify  [%|cwd] [module_name] [-n|--dry-run]",
     range = true,
     routes = {
       {
@@ -465,10 +492,16 @@ function M.enable()
           { name = "mode", type = "MIGRATE_NOTIFY_SCOPE", optional = true },
           { name = "module_name", type = "MIGRATE_MODULE_NAME", optional = true },
         },
+        flags = {
+          -- Only meaningful for the line and range modes; `%`/`cwd` already
+          -- preview through their picker. Accepted there too rather than
+          -- rejected, so a mapping can pass it unconditionally.
+          { name = "dry-run", short = "n", bool = true },
+        },
         range = true,
         desc = "Migrate vim.notify to lib.notify",
         run = function(ctx)
-          dispatch(ctx.raw)
+          dispatch(ctx.raw, ctx.flags["dry-run"])
         end,
       },
     },

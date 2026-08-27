@@ -123,6 +123,9 @@ Added 2026-08-24, closing the flag/option audit's entry about there being no
 dry run for the single-line case.
 
 - **Module:** `lua/migrate/common/command.lua` (`report_dry_run`, `dispatch`)
+  for `:MigrateOpt`/`:MigrateHl`/`:MigrateLsp`; `:MigrateNotify` has its own
+  `report_dry_run`/`dispatch` in `lua/migrate/notify/init.lua` since it
+  registers its command by hand instead of going through `common/command.lua`
 - **Usercmds:** `-n` / `--dry-run` on every `:Migrate*` command
 
 ## Pluggable migration registry
