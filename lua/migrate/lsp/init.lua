@@ -10,7 +10,7 @@ local command = require("migrate.common.command")
 local picker = require("migrate.common.picker")
 local buffer_ops = require("migrate.common.buffer")
 local migrator = require("migrate.lsp.migrator")
-local notify = require("lib.nvim.notify")
+local notify = require("lib.nvim.notify").create("[migrate.lsp]")
 
 local M = {}
 
