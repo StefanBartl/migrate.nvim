@@ -202,8 +202,6 @@ remaining gap (a `/types` folder per subdirectory instead of two central
 
 - **CI:** `.github/workflows/ci.yml` — `stylua --check`, `luacheck`, and the
   headless `TESTS/` suite on every push/PR to `main`.
-- **Audit trail:** [`ROADMAP/Checklist.md`](ROADMAP/Checklist.md) (master
-  checklist), [`ROADMAP/Arch&Coding.md`](ROADMAP/Arch&Coding.md)
-  (architecture & coding rules), [`ROADMAP/Zentral-Prinzipien.md`](ROADMAP/Zentral-Prinzipien.md)
-  (central module principles), [`ROADMAP/PluginPackagingChecklist.md`](ROADMAP/PluginPackagingChecklist.md)
-  (packaging checklist) — each closed out, kept for reference.
+- **Audit trail:** the four checklist audits (master checklist, architecture
+  and coding rules, central module principles, packaging checklist) were each
+  worked through and closed out.

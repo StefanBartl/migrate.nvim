@@ -2,7 +2,7 @@
 
 Things considered for migrate.nvim that aren't open tasks — either explored
 and deliberately not pursued, or genuinely speculative and not yet worth a
-roadmap slot. See [`docs/ROADMAP.md`](ROADMAP.md) for what's actually planned.
+roadmap slot.
 
 ## Considered and rejected
 

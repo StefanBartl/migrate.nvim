@@ -67,6 +67,5 @@ work, for turning it off without touching any plugin's config.
 - [Configuration](docs/configuration.md) — all `setup()` options and their defaults.
 - [Commands](docs/commands.md) — quick start, `:MigrateOpt`/`:MigrateNotify` reference, keymaps, and `:checkhealth migrate`.
 - [Architecture](docs/architecture.md) — source layout overview.
-- [Roadmap](docs/ROADMAP.md) — planned extensions.
 - [Usage examples](docs/USAGE-EXAMPLES.md) — full before/after scenarios (aliasing, multiline calls, batch workflows, edge cases).
 - [Bindings cheatsheet](docs/BINDINGS.md) — machine-readable keymap/command/autocommand reference.
