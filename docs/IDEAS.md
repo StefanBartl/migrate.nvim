@@ -17,5 +17,4 @@ roadmap slot. See [`docs/ROADMAP.md`](ROADMAP.md) for what's actually planned.
 - **`filetree.nvim` integration** — migrate.nvim was audited as part of a
   cross-repo sweep for filetree-manager features (Neotree/NvimTree/Netrw) to
   fold into a future `filetree.nvim`. Result: none — migrate.nvim is a
-  code-migration plugin with no filetree surface at all. Full audit:
-  [`ROADMAP/NEOTREE_FEATURES.md`](ROADMAP/NEOTREE_FEATURES.md).
+  code-migration plugin with no filetree surface at all.

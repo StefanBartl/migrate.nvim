@@ -22,7 +22,6 @@ way it is.
 | [`Checklist.md`](ROADMAP/Checklist.md) | The Lua/Neovim master checklist, applied to this plugin. |
 | [`Zentral-Prinzipien.md`](ROADMAP/Zentral-Prinzipien.md) | The central principles, applied to this plugin. |
 | [`PluginPackagingChecklist.md`](ROADMAP/PluginPackagingChecklist.md) | The plugin/config packaging checklist, applied to this plugin. |
-| [`NEOTREE_FEATURES.md`](ROADMAP/NEOTREE_FEATURES.md) | Which of this plugin's features are worth porting into filetree.nvim. |
 
 The audits share a convention: **✅ good · 🟡 partial · ❌ gap**.
 Findings that were acted on are removed rather than ticked, so what is left

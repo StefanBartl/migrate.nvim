@@ -150,5 +150,5 @@ kein Config-Modul), 2 zentrale `@types`-Dateien statt Pro-Subdir-Anker.
 
 ## Literatur und Referenzen
 
-- [Arch&Coding.md](./Arch&Coding.md) · [Zentral-Prinzipien.md](./Zentral-Prinzipien.md) · [NEOTREE_FEATURES.md](./NEOTREE_FEATURES.md)
+- [Arch&Coding.md](./Arch&Coding.md) · [Zentral-Prinzipien.md](./Zentral-Prinzipien.md)
 - Quell-Checklisten: `../../../WKDBooks/Development/wkdbook-Lua/Checklists/`
