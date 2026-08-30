@@ -12,8 +12,10 @@
                                                        .nvim
 ```
 
-![Neovim](https://img.shields.io/badge/Neovim-0.9+-57A143?logo=neovim&logoColor=white)
-![Lua](https://img.shields.io/badge/Made%20with-Lua-2C2D72?logo=lua&logoColor=white)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Neovim](https://img.shields.io/badge/Neovim-0.9%2B-57A143?logo=neovim&logoColor=white)](https://neovim.io)
+[![Lua](https://img.shields.io/badge/Lua-5.1%2FLuaJIT-2C2D72?logo=lua&logoColor=white)](https://www.lua.org)
+![Status](https://img.shields.io/badge/status-active%20development-blue)
 [![CI](https://github.com/StefanBartl/migrate.nvim/actions/workflows/ci.yml/badge.svg)](https://github.com/StefanBartl/migrate.nvim/actions/workflows/ci.yml)
 
 > 💡 Pairs well with [recommender.nvim](https://github.com/StefanBartl/recommender.nvim):
