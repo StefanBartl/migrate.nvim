@@ -65,7 +65,11 @@ function M.create_undo_point(bufnr)
   end
 
   api.nvim_buf_call(bufnr, function()
-    pcall(vim.cmd, "undojoin")
+    -- `vim.cmd` is a callable table, not a function: the closure form is what
+    -- `pcall` takes.
+    pcall(function()
+      vim.cmd("undojoin")
+    end)
   end)
 end
 
@@ -103,6 +107,9 @@ function M.ensure_buffer(filepath)
   if not ok then
     return nil
   end
+  -- Past the guard the slot carries the buffer handle; the string half of its
+  -- type is the error branch above.
+  ---@cast bufnr_or_err integer
   return bufnr_or_err
 end
 
