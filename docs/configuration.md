@@ -23,6 +23,12 @@ require("migrate").setup({
 
   -- Trace the scan -> picker -> apply -> write pipeline via notify.debug().
   debug = false,
+
+  -- Register a position preview with hover.nvim, so resting the cursor on a
+  -- line that uses a deprecated call says so in its float. A no-op without
+  -- hover.nvim installed. See docs/hover.md for why this one is on by
+  -- default while every other integration here is opt-in.
+  hover = true,
 })
 ```
 

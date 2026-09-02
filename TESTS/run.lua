@@ -22,6 +22,7 @@ local specs = {
   "hl_migrator_spec.lua",
   "lsp_migrator_spec.lua",
   "notify_parser_spec.lua",
+  "hover_spec.lua",
 }
 
 local failed = 0

@@ -31,6 +31,14 @@ function M.setup(opts)
   config.setup(opts)
   require("migrate.bindings").setup(config.get())
 
+  -- Tell hover.nvim that a line using a deprecated call has something worth
+  -- saying about it. Soft: without hover.nvim this does nothing, and
+  -- hover.nvim never names this plugin -- it takes the contribution through
+  -- its registry. `hover = false` in the spec turns it off.
+  if config.get().hover ~= false then
+    require("migrate.hover").setup()
+  end
+
   -- One-time (persisted across restarts) popup on the first setup() after
   -- installing this plugin: which CLI tools it wants and why
   -- (docs/install.json). `:Lib deps show migrate.nvim` thereafter.

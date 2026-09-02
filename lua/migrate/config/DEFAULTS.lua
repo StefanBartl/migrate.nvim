@@ -27,6 +27,18 @@ local DEFAULTS = {
   -- this plugin specifically, right here in the spec passed to setup() —
   -- no vim.g needed. See README.
   deps_popup = true,
+
+  -- Register a position preview with hover.nvim, so resting the cursor on a
+  -- line that uses a deprecated call says so in hover.nvim's float. Soft in
+  -- both directions: without hover.nvim installed this does nothing at all,
+  -- and it costs nothing then either.
+  --
+  -- On by default, which is unusual for an integration and deliberate here:
+  -- `migrate_line` returns the line unchanged unless it genuinely migrates,
+  -- so this answers only where there is something to report. The usual
+  -- objection to an unasked float -- that it interrupts without adding --
+  -- has no purchase.
+  hover = true,
 }
 
 for name in pairs(registry.list()) do

@@ -64,6 +64,32 @@ plugin's own spec**: `require("migrate").setup({ deps_popup = false })`.
 `vim.g.lib_nvim_deps_disabled_plugins = { "migrate.nvim" }` also still
 work, for turning it off without touching any plugin's config.
 
+### With hover.nvim installed
+
+Resting the cursor on a line that uses a deprecated call says so, in
+[hover.nvim](https://github.com/StefanBartl/hover.nvim)'s float:
+
+```
+local c = vim.lsp.buf_get_clients(0)
+              │
+        ┌ migrate.nvim ──────────────────────────────────┐
+        │ deprecated API on this line       │
+        │                                   │
+        │ now:  local c = vim.lsp.get_clie…  │
+        └───────────────────────────────────┘
+```
+
+Nothing to install and nothing to configure: with hover.nvim absent this does
+nothing at all. `require("migrate").setup({ hover = false })` turns it off.
+
+**On by default, which is unusual for an integration.** The usual objection to
+a float that opens unasked is that it interrupts without adding, and that has
+no purchase here: the same `migrate_line` the commands use returns the line
+unchanged unless it genuinely migrates, so this answers only on the lines
+where there is something to report and is silent on every other. It is also
+not a second copy of the rules — a new deprecation reaches the hover in the
+same commit as the migrator.
+
 ---
 
 ## Documentation
@@ -75,6 +101,7 @@ work, for turning it off without touching any plugin's config.
 - [Architecture](docs/architecture.md) — source layout overview.
 - [Usage examples](docs/USAGE-EXAMPLES.md) — full before/after scenarios (aliasing, multiline calls, batch workflows, edge cases).
 - [Bindings cheatsheet](docs/BINDINGS.md) — machine-readable keymap/command/autocommand reference.
+- [hover.nvim integration](docs/hover.md) — what the float says, when it says it, and why this one is on by default.
 
 ## License
 

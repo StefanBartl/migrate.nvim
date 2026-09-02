@@ -10,6 +10,7 @@
 ---@field keymaps UsrCmds.Migrate.Keymaps|false|nil Optional keymaps (default: false = disabled)
 ---@field debug boolean|nil Trace the scan -> picker -> apply -> write pipeline (default: false)
 ---@field deps_popup boolean|nil Show the lib.nvim.deps "declared tools" popup once, ever, on first setup() after install (default true; needs lib.nvim.deps — a no-op without it)
+---@field hover boolean|nil Register a position preview with hover.nvim, so a line using a deprecated call says so in its float (default true; a no-op without hover.nvim)
 
 ---@class UsrCmds.Migrate.Keymaps
 ---@field opt string|false|nil Keymap that runs :MigrateOpt (current line)
